@@ -20,11 +20,15 @@ def main(args):
 
     segnet = CreateSegNet(args.input_shape, args.n_labels, args.kernel, args.pool_size, args.output_mode)
     #print(segnet.summary())
+    
+    # Load weights if specified in args
+    if args.weights:
+        segnet.load_weights(args.weights)
 
     segnet.compile(loss=args.loss, optimizer=args.optimizer, metrics=["accuracy"])
     segnet.fit_generator(train_gen, steps_per_epoch=args.epoch_steps, epochs=args.n_epochs, validation_data=val_gen, validation_steps=args.val_steps)
 
-    segnet.save_weights("./weights/SegNet"+str(args.n_epochs)+".hdf5")
+    segnet.save_weights("./weights/SegNet-"+str(args.n_epochs)+".hdf5")
     print("Saving weight done..")
 
     json_string = segnet.to_json()
@@ -34,6 +38,9 @@ def main(args):
 if __name__ == "__main__":
     # command line argments
     parser = argparse.ArgumentParser(description="SegNet dataset")
+    parser.add_argument("--weights",
+            default=None,
+            help="starting weights path")
     parser.add_argument("--train_list",
             default="./dataset/train/id.txt",
             help="train list path")
@@ -53,7 +60,7 @@ if __name__ == "__main__":
             default="./dataset/val/maps/",
             help="val mask dir path")
     parser.add_argument("--batch_size",
-            default=10,
+            default=5,
             type=int,
             help="batch size")
     parser.add_argument("--n_epochs",
