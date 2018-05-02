@@ -64,7 +64,6 @@ def CreateSegNet(input_shape, n_labels, kernel=3, pool_size=(2, 2), output_mode=
     conv_13 = Activation("relu")(conv_13)
 
     pool_5, mask_5 = MaxPoolingWithArgmax2D(pool_size)(conv_13)
-    print("Build enceder done..")
 
     # decoder
 
@@ -124,7 +123,6 @@ def CreateSegNet(input_shape, n_labels, kernel=3, pool_size=(2, 2), output_mode=
     conv_26 = Reshape((input_shape[0] * input_shape[1], n_labels), input_shape=(input_shape[0], input_shape[1], n_labels))(conv_26)
 
     outputs = Activation(output_mode)(conv_26)
-    print("Build decoder done..")
 
     segnet = Model(inputs=inputs, outputs=outputs, name="SegNet")
 

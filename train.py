@@ -6,8 +6,8 @@ import pandas as pd
 
 def main(args):
     # set the necessary list
-    train_list = pd.read_csv(args.train_list,header=None)
-    val_list = pd.read_csv(args.val_list,header=None)
+    train_list = pd.read_csv(args.train_list,header=None, dtype={0: str})
+    val_list = pd.read_csv(args.val_list,header=None, dtype={0: str})
 
     # set the necessary directories
     trainimg_dir = args.trainimg_dir
@@ -19,45 +19,45 @@ def main(args):
     val_gen = data_gen_small(valimg_dir, valmsk_dir, val_list, args.batch_size, [args.input_shape[0], args.input_shape[1]], args.n_labels)
 
     segnet = CreateSegNet(args.input_shape, args.n_labels, args.kernel, args.pool_size, args.output_mode)
-    print(segnet.summary())
+    #print(segnet.summary())
 
     segnet.compile(loss=args.loss, optimizer=args.optimizer, metrics=["accuracy"])
     segnet.fit_generator(train_gen, steps_per_epoch=args.epoch_steps, epochs=args.n_epochs, validation_data=val_gen, validation_steps=args.val_steps)
 
-    segnet.save_weights("../weights/SegNet"+str(args.n_epochs)+".hdf5")
+    segnet.save_weights("./weights/SegNet"+str(args.n_epochs)+".hdf5")
     print("Saving weight done..")
 
     json_string = segnet.to_json()
-    open("../model/SegNet.json", "w").write(json_string)
+    open("./model/SegNet.json", "w").write(json_string)
 
 
 if __name__ == "__main__":
     # command line argments
-    parser = argparse.ArgumentParser(description="SegNet Segmentation")
+    parser = argparse.ArgumentParser(description="SegNet dataset")
     parser.add_argument("--train_list",
-            default="../LIP/TrainVal_images/train_id.txt",
+            default="./dataset/train/id.txt",
             help="train list path")
     parser.add_argument("--trainimg_dir",
-            default="../LIP/TrainVal_images/TrainVal_images/train_images/",
+            default="./dataset/train/images/",
             help="train image dir path")
     parser.add_argument("--trainmsk_dir",
-            default="../LIP/TrainVal_parsing_annotations/TrainVal_parsing_annotations/train_segmentations/",
+            default="./dataset/train/maps/",
             help="train mask dir path")
     parser.add_argument("--val_list",
-            default="../LIP/TrainVal_images/val_id.txt",
+            default="./dataset/val/id.txt",
             help="val list path")
     parser.add_argument("--valimg_dir",
-            default="../LIP/TrainVal_images/TrainVal_images/val_images/",
+            default="./dataset/val/images/",
             help="val image dir path")
     parser.add_argument("--valmsk_dir",
-            default="../LIP/TrainVal_parsing_annotations/TrainVal_parsing_annotations/val_segmentations/",
+            default="./dataset/val/maps/",
             help="val mask dir path")
     parser.add_argument("--batch_size",
             default=10,
             type=int,
             help="batch size")
     parser.add_argument("--n_epochs",
-            default=10,
+            default=1,
             type=int,
             help="number of epoch")
     parser.add_argument("--epoch_steps",
