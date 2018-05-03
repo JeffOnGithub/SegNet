@@ -1,5 +1,5 @@
 from SegNet import CreateSegNet
-from generator import data_gen_small
+from generator import data_generator
 
 import argparse
 import pandas as pd
@@ -15,8 +15,8 @@ def main(args):
     valimg_dir = args.valimg_dir
     valmsk_dir = args.valmsk_dir
 
-    train_gen = data_gen_small(trainimg_dir, trainmsk_dir, train_list, args.batch_size, [args.input_shape[0], args.input_shape[1]], args.n_labels, args.crop, args.flip)
-    val_gen = data_gen_small(valimg_dir, valmsk_dir, val_list, args.batch_size, [args.input_shape[0], args.input_shape[1]], args.n_labels, args.crop, args.flip) 
+    train_gen = data_generator(trainimg_dir, trainmsk_dir, train_list, args.batch_size, [args.input_shape[0], args.input_shape[1]], args.n_labels, args.crop, args.flip)
+    val_gen = data_generator(valimg_dir, valmsk_dir, val_list, args.batch_size, [args.input_shape[0], args.input_shape[1]], args.n_labels, args.crop, args.flip) 
 
     segnet = CreateSegNet(args.input_shape, args.n_labels, args.kernel, args.pool_size, args.output_mode)
     print("SegNet created")

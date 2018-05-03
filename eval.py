@@ -2,31 +2,21 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import cv2
-from random import randint
 import argparse
 from SegNet import CreateSegNet
-
-random_x = randint(0, 511)
-random_y = randint(0, 255)
+from generator import single_batch_generator
 
 def main(args):
-    truth_maps = []
-    pred_imgs = []
-    
-    for i in range(0, args.sample_size):
-        # Load ground truth maps
-        full_path = args.testmsk_dir + str(i).zfill(5) + '.png'
-        img = cv2.imread(full_path)
-        cropped_img = img[random_y:random_y + 256, random_x:random_x + 256]
-        truth_maps.append(cropped_img)
-    
-        # Load test images    
-        full_path = args.testimg_dir + str(i).zfill(5) + '.png'
-        img_map = cv2.imread(full_path)
-        cropped_map = img_map[random_y:random_y + 256, random_x:random_x + 256]
-        cropped_map = cv2.cvtColor(cropped_map, cv2.COLOR_RGB2BGR)
-        pred_imgs.append(cropped_map)
+    pred_imgs, truth_maps = single_batch_generator(args.testimg_dir, 
+                                                  args.testmsk_dir, 
+                                                  pd.read_csv(args.test_list,header=None, dtype={0: str}), 
+                                                  args.batch_size, 
+                                                  [args.input_shape[0], args.input_shape[1]], 
+                                                  args.n_labels, 
+                                                  args.crop, 
+                                                  args.flip)
     np_pred_imgs = np.array(pred_imgs)
     
     # Generate a combined images of all test images input
@@ -94,14 +84,20 @@ if __name__ == "__main__":
     parser.add_argument("--results_dir",
             default="./results/",
             help="test mask dir path")
-    parser.add_argument("--sample_size",
+    parser.add_argument("--batch_size",
             default=20,
             type=int,
-            help="Eval sample size")
+            help="Eval batch size")
     parser.add_argument("--n_labels",
             default=2,
             type=int,
             help="Number of label")
+    parser.add_argument("--crop",
+            default=True,
+            help="Crop to input shape, otherwise resize")
+    parser.add_argument("--flip",
+            default=True,
+            help="Random flip of training images")
     parser.add_argument("--input_shape",
             default=(256, 256, 3),
             help="Input images shape")
