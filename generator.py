@@ -2,7 +2,6 @@
 import numpy as np
 import cv2
 from random import randint
-from keras.preprocessing.image import array_to_img, img_to_array, load_img, ImageDataGenerator
 
 def to_categorical_labels(labels, dims, n_labels):
     x = np.zeros([dims[0], dims[1], n_labels])
