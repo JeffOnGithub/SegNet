@@ -5,3 +5,4 @@ pretrained/*.hdf5
 dataset/
 weights/
 model/
+results/
