@@ -25,10 +25,9 @@ def data_gen_small(img_dir, mask_dir, lists, batch_size, dims, n_labels, crop, f
                 original_mask = cv2.imread(mask_dir + lists.iloc[i, 0] + '.png')
                 
                 # Random crop or resize, openCV starts with height, not width
-                random_x = randint(0, original_img.shape[1] - dims[0])
-                random_y = randint(0, original_img.shape[0] - dims[1])
-                
                 if crop:
+                    random_x = randint(0, original_img.shape[1] - dims[0])
+                    random_y = randint(0, original_img.shape[0] - dims[1])
                     transformed_img = original_img[random_y:random_y + dims[1], random_x:random_x + dims[0]]
                     transformed__mask = original_mask[random_y:random_y + dims[1], random_x:random_x + dims[0]]
                 else:
