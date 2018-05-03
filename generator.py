@@ -17,6 +17,7 @@ def single_batch_generator(img_dir, mask_dir, lists, batch_size, dims, n_labels,
         
         # images
         original_img = cv2.imread(img_dir + lists.iloc[i, 0] + ".png")
+        original_img = cv2.cvtColor(original_img, cv2.COLOR_BGR2RGB)
         # masks
         original_mask = cv2.imread(mask_dir + lists.iloc[i, 0] + '.png')
         
