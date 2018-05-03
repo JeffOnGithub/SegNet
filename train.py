@@ -15,8 +15,8 @@ def main(args):
     valimg_dir = args.valimg_dir
     valmsk_dir = args.valmsk_dir
 
-    train_gen = data_gen_small(trainimg_dir, trainmsk_dir, train_list, args.batch_size, [args.input_shape[0], args.input_shape[1]], args.n_labels)
-    val_gen = data_gen_small(valimg_dir, valmsk_dir, val_list, args.batch_size, [args.input_shape[0], args.input_shape[1]], args.n_labels)
+    train_gen = data_gen_small(trainimg_dir, trainmsk_dir, train_list, args.batch_size, [args.input_shape[0], args.input_shape[1]], args.n_labels, args.crop, args.flip)
+    val_gen = data_gen_small(valimg_dir, valmsk_dir, val_list, args.batch_size, [args.input_shape[0], args.input_shape[1]], args.n_labels, args.crop, args.flip) 
 
     segnet = CreateSegNet(args.input_shape, args.n_labels, args.kernel, args.pool_size, args.output_mode)
     print("SegNet created")
@@ -81,6 +81,12 @@ if __name__ == "__main__":
             default=2,
             type=int,
             help="Number of label")
+    parser.add_argument("--crop",
+            default=True,
+            help="Crop to input shape, otherwise resize")
+    parser.add_argument("--flip",
+            default=True,
+            help="Random flip of training images")
     parser.add_argument("--input_shape",
             default=(256, 256, 3),
             help="Input images shape")
