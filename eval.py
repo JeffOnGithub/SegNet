@@ -7,6 +7,7 @@ import cv2
 import argparse
 from SegNet import CreateSegNet
 from generator import single_batch_generator
+from configuration import config
 
 def main(args):
     pred_imgs, truth_maps = single_batch_generator(args.testimg_dir, 
@@ -70,46 +71,46 @@ if __name__ == "__main__":
             default="./weights/SegNet.hdf5",
             help="starting weights path")
     parser.add_argument("--model",
-        default="./model/SegNet.json",
+        default=None,
         help="starting weights path")
     parser.add_argument("--test_list",
-            default="./dataset/test/id.txt",
+            default=config['dataset']['test']['ids_file'],
             help="test list path")
     parser.add_argument("--testimg_dir",
-            default="./dataset/test/images/",
+            default=config['dataset']['test']['images_dir'],
             help="test image dir path")
     parser.add_argument("--testmsk_dir",
-            default="./dataset/test/maps/",
+            default=config['dataset']['test']['masks_dir'],
             help="test mask dir path")
     parser.add_argument("--results_dir",
             default="./results/",
             help="test mask dir path")
     parser.add_argument("--batch_size",
-            default=20,
+            default=config['eval']['batch_size'],
             type=int,
             help="Eval batch size")
     parser.add_argument("--n_labels",
-            default=2,
+            default=config['dataset']['n_labels'],
             type=int,
             help="Number of label")
     parser.add_argument("--crop",
-            default=True,
+            default=config['eval']['crop'],
             help="Crop to input shape, otherwise resize")
     parser.add_argument("--flip",
-            default=True,
+            default=config['eval']['flip'],
             help="Random flip of training images")
     parser.add_argument("--input_shape",
-            default=(256, 256, 3),
+            default=config['segnet']['input_shape'],
             help="Input images shape")
     parser.add_argument("--kernel",
-            default=3,
+            default=config['segnet']['kernel'],
             type=int,
             help="Kernel size")
     parser.add_argument("--pool_size",
-            default=(2, 2),
+            default=config['segnet']['pool_size'],
             help="pooling and unpooling size")
     parser.add_argument("--output_mode",
-            default="softmax",
+            default=config['segnet']['output_mode'],
             type=str,
             help="output activation")
     args = parser.parse_args()

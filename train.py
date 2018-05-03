@@ -1,6 +1,6 @@
 from SegNet import CreateSegNet
 from generator import data_generator
-
+from configuration import config
 import argparse
 import pandas as pd
 
@@ -44,69 +44,69 @@ if __name__ == "__main__":
             default=None,
             help="starting weights path")
     parser.add_argument("--train_list",
-            default="./dataset/train/id.txt",
+            default=config['dataset']['train']['ids_file'],
             help="train list path")
     parser.add_argument("--trainimg_dir",
-            default="./dataset/train/images/",
+            default=config['dataset']['train']['images_dir'],
             help="train image dir path")
     parser.add_argument("--trainmsk_dir",
-            default="./dataset/train/maps/",
+            default=config['dataset']['train']['masks_dir'],
             help="train mask dir path")
     parser.add_argument("--val_list",
-            default="./dataset/val/id.txt",
+            default=config['dataset']['val']['ids_file'],
             help="val list path")
     parser.add_argument("--valimg_dir",
-            default="./dataset/val/images/",
+            default=config['dataset']['val']['images_dir'],
             help="val image dir path")
     parser.add_argument("--valmsk_dir",
-            default="./dataset/val/maps/",
+            default=config['dataset']['val']['masks_dir'],
             help="val mask dir path")
     parser.add_argument("--batch_size",
-            default=5,
+            default=config['training']['batch_size'],
             type=int,
             help="batch size")
     parser.add_argument("--n_epochs",
-            default=1,
+            default=config['training']['n_epochs'],
             type=int,
             help="number of epoch")
     parser.add_argument("--epoch_steps",
-            default=100,
+            default=config['training']['train_steps'],
             type=int,
             help="number of epoch step")
     parser.add_argument("--val_steps",
-            default=10,
+            default=config['training']['val_steps'],
             type=int,
             help="number of validation step")
     parser.add_argument("--n_labels",
-            default=2,
+            default=config['dataset']['n_labels'],
             type=int,
             help="Number of label")
     parser.add_argument("--crop",
-            default=True,
+            default=config['training']['crop'],
             help="Crop to input shape, otherwise resize")
     parser.add_argument("--flip",
-            default=True,
+            default=config['training']['flip'],
             help="Random flip of training images")
     parser.add_argument("--input_shape",
-            default=(256, 256, 3),
+            default=config['segnet']['input_shape'],
             help="Input images shape")
     parser.add_argument("--kernel",
-            default=3,
+            default=config['segnet']['kernel'],
             type=int,
             help="Kernel size")
     parser.add_argument("--pool_size",
-            default=(2, 2),
+            default=config['segnet']['pool_size'],
             help="pooling and unpooling size")
     parser.add_argument("--output_mode",
-            default="softmax",
+            default=config['segnet']['output_mode'],
             type=str,
             help="output activation")
     parser.add_argument("--loss",
-            default="categorical_crossentropy",
+            default=config['segnet']['loss'],
             type=str,
             help="loss function")
     parser.add_argument("--optimizer",
-            default="adadelta",
+            default=config['segnet']['optimizer'],
             type=str,
             help="optimizer")
     args = parser.parse_args()
