@@ -19,6 +19,7 @@ def main(args):
     val_gen = data_gen_small(valimg_dir, valmsk_dir, val_list, args.batch_size, [args.input_shape[0], args.input_shape[1]], args.n_labels)
 
     segnet = CreateSegNet(args.input_shape, args.n_labels, args.kernel, args.pool_size, args.output_mode)
+    print("SegNet created")
     #print(segnet.summary())
     
     # Load weights if specified in args
@@ -29,10 +30,11 @@ def main(args):
     segnet.fit_generator(train_gen, steps_per_epoch=args.epoch_steps, epochs=args.n_epochs, validation_data=val_gen, validation_steps=args.val_steps)
 
     segnet.save_weights("./weights/SegNet-"+str(args.n_epochs)+".hdf5")
-    print("Saving weight done..")
+    print("Weights saved")
 
-    json_string = segnet.to_json()
-    open("./model/SegNet.json", "w").write(json_string)
+    #json_string = segnet.to_json()
+    #open("./model/SegNet.json", "w").write(json_string)
+    #print("Model saved")
 
 
 if __name__ == "__main__":
@@ -74,9 +76,9 @@ if __name__ == "__main__":
     parser.add_argument("--val_steps",
             default=10,
             type=int,
-            help="number of valdation step")
+            help="number of validation step")
     parser.add_argument("--n_labels",
-            default=20,
+            default=2,
             type=int,
             help="Number of label")
     parser.add_argument("--input_shape",
@@ -100,7 +102,7 @@ if __name__ == "__main__":
     parser.add_argument("--optimizer",
             default="adadelta",
             type=str,
-            help="oprimizer")
+            help="optimizer")
     args = parser.parse_args()
 
     main(args)
