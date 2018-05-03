@@ -41,6 +41,10 @@ config['eval'] = dict()
 config['eval']['batch_size'] = 20
 config['eval']['crop'] = True
 config['eval']['flip'] = True
+config['eval']['results_dir'] = "./results/"
+config['eval']['weights_file'] = "./weights/SegNet.hdf5"
+config['eval']['model_file'] = None
+
 
 ################### Segnet properties
 

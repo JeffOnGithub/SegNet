@@ -68,10 +68,10 @@ if __name__ == "__main__":
     # command line argments
     parser = argparse.ArgumentParser(description="SegNet dataset")
     parser.add_argument("--weights",
-            default="./weights/SegNet.hdf5",
+            default=config['eval']['weights_file'],
             help="starting weights path")
     parser.add_argument("--model",
-        default=None,
+        default=config['eval']['model_file'],
         help="starting weights path")
     parser.add_argument("--test_list",
             default=config['dataset']['test']['ids_file'],
@@ -83,7 +83,7 @@ if __name__ == "__main__":
             default=config['dataset']['test']['masks_dir'],
             help="test mask dir path")
     parser.add_argument("--results_dir",
-            default="./results/",
+            default=config['eval']['results_dir'],
             help="test mask dir path")
     parser.add_argument("--batch_size",
             default=config['eval']['batch_size'],
