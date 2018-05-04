@@ -8,6 +8,7 @@ import argparse
 from SegNet import CreateSegNet
 from generator import single_batch_generator
 from configuration import config
+from os import listdir
 
 # Compare a prediction to ground truth to establish a visual result of the accuracy
 def compare_image_ground_truth(compared_image, ground_truth):
@@ -31,7 +32,7 @@ def compare_image_ground_truth(compared_image, ground_truth):
 def main(args):
     pred_imgs, truth_masks = single_batch_generator(args.testimg_dir, 
                                                   args.testmsk_dir, 
-                                                  pd.read_csv(args.test_list,header=None, dtype={0: str}), 
+                                                  pd.DataFrame(listdir(args.testimg_dir)), 
                                                   args.batch_size, 
                                                   [args.input_shape[0], args.input_shape[1]], 
                                                   args.n_labels, 
@@ -120,9 +121,6 @@ if __name__ == "__main__":
     parser.add_argument("--model",
         default=config['eval']['model_file'],
         help="starting weights path")
-    parser.add_argument("--test_list",
-            default=config['dataset']['test']['ids_file'],
-            help="test list path")
     parser.add_argument("--testimg_dir",
             default=config['dataset']['test']['images_dir'],
             help="test image dir path")

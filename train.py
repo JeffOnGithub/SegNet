@@ -3,11 +3,12 @@ from generator import data_generator
 from configuration import config
 import argparse
 import pandas as pd
+from os import listdir
 
 def main(args):
     # set the necessary list
-    train_list = pd.read_csv(args.train_list,header=None, dtype={0: str})
-    val_list = pd.read_csv(args.val_list,header=None, dtype={0: str})
+    train_list = pd.DataFrame(listdir(args.trainimg_dir))
+    val_list = pd.DataFrame(listdir(args.valimg_dir))
 
     # set the necessary directories
     trainimg_dir = args.trainimg_dir
@@ -43,18 +44,12 @@ if __name__ == "__main__":
     parser.add_argument("--weights",
             default=None,
             help="starting weights path")
-    parser.add_argument("--train_list",
-            default=config['dataset']['train']['ids_file'],
-            help="train list path")
     parser.add_argument("--trainimg_dir",
             default=config['dataset']['train']['images_dir'],
             help="train image dir path")
     parser.add_argument("--trainmsk_dir",
             default=config['dataset']['train']['masks_dir'],
             help="train mask dir path")
-    parser.add_argument("--val_list",
-            default=config['dataset']['val']['ids_file'],
-            help="val list path")
     parser.add_argument("--valimg_dir",
             default=config['dataset']['val']['images_dir'],
             help="val image dir path")
