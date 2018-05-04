@@ -8,6 +8,23 @@ import argparse
 from SegNet import CreateSegNet
 from generator import single_batch_generator
 from configuration import config
+from keras.utils import to_categorical
+
+def compare_image_ground_truth(compared_image, ground_truth):
+    diff = np.zeros([compared_image.shape[0], compared_image.shape[1], 3])
+    for x in range(0, compared_image.shape[0]):
+        for y in range(0, compared_image.shape[1]):
+            image_data = compared_image[x][y]
+            truth_data = ground_truth[x][y]
+            #Yellow to Green
+            if truth_data == 1:
+                delta = truth_data - image_data
+                diff[x,y] = [delta, 1, 0]
+            #Red to black
+            else:
+                delta = image_data
+                diff[x,y] = [delta, 0, 0]
+    return diff
 
 def main(args):
     pred_imgs, truth_maps = single_batch_generator(args.testimg_dir, 
@@ -33,7 +50,7 @@ def main(args):
     # Run images in the network
     result = segnet.predict(np_pred_imgs)
     print("Predictions generated")
-    
+        
     # Reshape result images
     result_imgs = []
     for image in result:
@@ -52,9 +69,33 @@ def main(args):
     results_comb = np.hstack( (np.asarray(i) for i in v_stacked ) )
     #plt.imsave('combined_output.png', results_comb)
     
+    if args.ground_truth:
+        # Reshape ground trutch
+        truth_maps_reshaped = []
+        for mask in truth_maps:
+            result_img = []
+            for i in range(0, args.n_labels):
+                reshaped = np.reshape(mask[:,i], (args.input_shape[0], args.input_shape[1]))
+                result_img.append(reshaped)
+            truth_maps_reshaped.append(result_img)
+            
+        # Generate a combined images of all test images output
+        v_stacked = []
+        for mask in truth_maps_reshaped:
+            this_mask = np.vstack( np.asarray(i) for i in mask)
+            v_stacked.append(this_mask)
+        
+        masks_comb = np.hstack( (np.asarray(i) for i in v_stacked ) )
+        plt.imsave('combined_output.png', masks_comb)
+        
+        #Compared ground truth to predictions
+        results_comb = compare_image_ground_truth(results_comb, masks_comb)
+    
+    else:    
+        results_comb = cv2.cvtColor(results_comb, cv2.COLOR_GRAY2RGB)        
+        
     # Stack combined images
     imgs_comb = imgs_comb / 255.0
-    results_comb = cv2.cvtColor(results_comb, cv2.COLOR_GRAY2RGB)
     
     imgs_to_stack = [imgs_comb, results_comb]
     imgs_total = np.vstack( (np.asarray(i) for i in imgs_to_stack ) )
@@ -85,6 +126,9 @@ if __name__ == "__main__":
     parser.add_argument("--results_dir",
             default=config['eval']['results_dir'],
             help="test mask dir path")
+    parser.add_argument("--ground_truth",
+            default=config['eval']['ground_truth'],
+            help="Compare to ground truth or raw results")
     parser.add_argument("--batch_size",
             default=config['eval']['batch_size'],
             type=int,

@@ -30,7 +30,7 @@ config['dataset']['n_labels'] = 2
 #Training
 config['training'] = dict()
 config['training']['batch_size'] = 5
-config['training']['n_epochs'] = 1
+config['training']['n_epochs'] = 10
 config['training']['train_steps'] = 100
 config['training']['val_steps'] = 20
 config['training']['crop'] = True
@@ -41,6 +41,7 @@ config['eval'] = dict()
 config['eval']['batch_size'] = 20
 config['eval']['crop'] = True
 config['eval']['flip'] = True
+config['eval']['ground_truth'] = True
 config['eval']['results_dir'] = "./results/"
 config['eval']['weights_file'] = "./weights/SegNet.hdf5"
 config['eval']['model_file'] = None
