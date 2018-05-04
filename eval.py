@@ -31,13 +31,16 @@ def compare_image_ground_truth(compared_image, ground_truth):
 
 def main(args):
     pred_imgs, truth_masks = single_batch_generator(args.testimg_dir, 
-                                                  args.testmsk_dir, 
-                                                  pd.DataFrame(listdir(args.testimg_dir)), 
-                                                  args.batch_size, 
-                                                  [args.input_shape[0], args.input_shape[1]], 
-                                                  args.n_labels, 
-                                                  args.crop, 
-                                                  args.flip)
+                                                    args.testmsk_dir, 
+                                                    pd.DataFrame(listdir(args.testimg_dir)), 
+                                                    args.batch_size, 
+                                                    [args.input_shape[0], args.input_shape[1]], 
+                                                    args.n_labels, 
+                                                    args.crop, 
+                                                    args.flip,
+                                                    empty_mask= not args.ground_truth)
+                                                    #do not create masks when they are not needed, useful for tests
+                                                    #without mask data
     np_pred_imgs = np.array(pred_imgs)
     
     # Generate a combined images of all test images input

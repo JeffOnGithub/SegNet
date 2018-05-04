@@ -6,10 +6,10 @@ from random import randint
 # generator that we will use to read the data from the directory
 def data_generator(img_dir, mask_dir, lists, batch_size, dims, n_labels, crop, flip):
         while True:
-            yield single_batch_generator(img_dir, mask_dir, lists, batch_size, dims, n_labels, crop, flip)
+            yield single_batch_generator(img_dir, mask_dir, lists, batch_size, dims, n_labels, crop, flip, empty_mask=False)
 
 # Generate one batch of data
-def single_batch_generator(img_dir, mask_dir, lists, batch_size, dims, n_labels, crop, flip):
+def single_batch_generator(img_dir, mask_dir, lists, batch_size, dims, n_labels, crop, flip, empty_mask=False):
     ix = np.random.choice(np.arange(len(lists)), batch_size)
     imgs = []
     labels = []
@@ -25,7 +25,7 @@ def single_batch_generator(img_dir, mask_dir, lists, batch_size, dims, n_labels,
         transformed_img, transformed_mask = transform_data(original_img, original_mask, dims, crop, flip)
         
         # Convert mask to labels
-        array_mask = to_categorical_labels(transformed_mask[:, :, 0], dims, n_labels)
+        array_mask = to_categorical_labels(transformed_mask[:, :, 0], dims, n_labels, empty_mask)
         
         # Append image and mask to main lists
         imgs.append(transformed_img)
@@ -36,13 +36,16 @@ def single_batch_generator(img_dir, mask_dir, lists, batch_size, dims, n_labels,
     return imgs, labels
 
 # Reimplementation of to_categorical, not sure if it will stay
-def to_categorical_labels(labels, dims, n_labels):
+def to_categorical_labels(labels, dims, n_labels, empty_mask):
     x = np.zeros([dims[0], dims[1], n_labels])
-    for i in range(dims[0]):
-        for j in range(dims[1]):
-            x[i, j, labels[i][j]]=1
-    x = x.reshape(dims[0] * dims[1], n_labels)
-    return x
+    if empty_mask:
+        return x
+    else:
+        for i in range(dims[0]):
+            for j in range(dims[1]):
+                x[i, j, labels[i][j]]=1
+        x = x.reshape(dims[0] * dims[1], n_labels)
+        return x
 
 # Geometric transformations of images and mask
 def transform_data(original_img, original_mask, dims, crop, flip):
