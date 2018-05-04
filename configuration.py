@@ -33,6 +33,8 @@ CONFIG['training']['train_steps'] = 100
 CONFIG['training']['val_steps'] = 20
 CONFIG['training']['crop'] = True
 CONFIG['training']['flip'] = True
+CONFIG['training']['motion_blur'] = 0.25
+CONFIG['training']['sp_noise'] = 0.25
 
 #Eval
 CONFIG['eval'] = dict()

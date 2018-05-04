@@ -20,8 +20,29 @@ def main(args):
     valimg_dir = args.valimg_dir
     valmsk_dir = args.valmsk_dir
 
-    train_gen = data_generator(trainimg_dir, trainmsk_dir, train_list, args.batch_size, [args.input_shape[0], args.input_shape[1]], args.n_labels, args.crop, args.flip)
-    val_gen = data_generator(valimg_dir, valmsk_dir, val_list, args.batch_size, [args.input_shape[0], args.input_shape[1]], args.n_labels, args.crop, args.flip) 
+    # Training generator
+    train_gen = data_generator(trainimg_dir,
+                               trainmsk_dir,
+                               train_list,
+                               args.batch_size,
+                               [args.input_shape[0], args.input_shape[1]],
+                               args.n_labels,
+                               args.crop,
+                               args.flip,
+                               args.motion_blur,
+                               args.sp_noise)
+    
+    # Validation generator
+    val_gen = data_generator(valimg_dir,
+                             valmsk_dir,
+                             val_list,
+                             args.batch_size,
+                             [args.input_shape[0], args.input_shape[1]],
+                             args.n_labels,
+                             args.crop,
+                             args.flip,
+                             args.motion_blur,
+                             args.sp_noise) 
 
     segnet = create_segnet(args.input_shape, args.n_labels, args.kernel, args.pool_size, args.output_mode)
     print("SegNet created")
@@ -31,8 +52,14 @@ def main(args):
     if args.weights:
         segnet.load_weights(args.weights)
 
-    segnet.compile(loss=args.loss, optimizer=args.optimizer, metrics=["accuracy"])
-    segnet.fit_generator(train_gen, steps_per_epoch=args.epoch_steps, epochs=args.n_epochs, validation_data=val_gen, validation_steps=args.val_steps)
+    segnet.compile(loss=args.loss,
+                   optimizer=args.optimizer,
+                   metrics=["accuracy"])
+    segnet.fit_generator(train_gen,
+                         steps_per_epoch=args.epoch_steps,
+                         epochs=args.n_epochs,
+                         validation_data=val_gen,
+                         validation_steps=args.val_steps)
 
     segnet.save_weights("./weights/SegNet-"+str(args.n_epochs)+".hdf5")
     print("Weights saved")
@@ -86,6 +113,12 @@ if __name__ == "__main__":
     parser.add_argument("--flip",
                         default=CONFIG['training']['flip'],
                         help="Random flip of training images")
+    parser.add_argument("--sp_noise",
+                        default=CONFIG['training']['sp_noise'],
+                        help="Fraction of images with added noise")
+    parser.add_argument("--motion_blur",
+                        default=CONFIG['training']['motion_blur'],
+                        help="Fraction of images with added blur")
     parser.add_argument("--input_shape",
                         default=CONFIG['segnet']['input_shape'],
                         help="Input images shape")
