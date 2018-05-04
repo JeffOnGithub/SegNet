@@ -38,7 +38,7 @@ def single_batch_generator(img_dir, mask_dir, lists, batch_size, dims, n_labels,
     return imgs, labels
 
 def to_categorical_labels(labels, dims, n_labels, empty_mask):
-    """Reimplementation of to_categorical, not sure if it will stay"""
+    """Works like to_categorical, but allow to returns empty masks"""
     x = np.zeros([dims[0], dims[1], n_labels])
     if not empty_mask:
         for i in range(dims[0]):
