@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
+"""Build the Segnet model"""
+
 from keras.models import Model
 from keras.layers import Input
-from keras.layers.core import Dense, Dropout, Activation, Flatten, Reshape, Permute
-from keras.layers.convolutional import Convolution2D, MaxPooling2D, UpSampling2D, ZeroPadding2D
+from keras.layers.core import Activation, Reshape
+from keras.layers.convolutional import Convolution2D
 from keras.layers.normalization import BatchNormalization
 
 from keras_MaxPoolingLayers import MaxPoolingWithArgmax2D, MaxUnpooling2D
 
-def CreateSegNet(input_shape, n_labels, kernel=3, pool_size=(2, 2), output_mode="softmax"):
+def create_segnet(input_shape, n_labels, kernel=3, pool_size=(2, 2), output_mode="softmax"):
+    """Create a segnet model and returns it"""
     # encoder
     inputs = Input(shape=input_shape)
 
@@ -127,4 +130,3 @@ def CreateSegNet(input_shape, n_labels, kernel=3, pool_size=(2, 2), output_mode=
     segnet = Model(inputs=inputs, outputs=outputs, name="SegNet")
 
     return segnet
-

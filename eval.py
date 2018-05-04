@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
+"""Evaluate the Segnet model"""
 
+import argparse
+from os import listdir
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import cv2
-import argparse
-from SegNet import CreateSegNet
+from segnet import create_segnet
 from generator import single_batch_generator
-from configuration import config
-from os import listdir
+from configuration import CONFIG
 
-# Compare a prediction to ground truth to establish a visual result of the accuracy
 def compare_image_ground_truth(compared_image, ground_truth):
+    """Compare a prediction to ground truth to establish a visual result of the accuracy"""
     #Start with an empty array
     diff = np.zeros([compared_image.shape[0], compared_image.shape[1], 3])
     #Loop everything
@@ -22,37 +23,38 @@ def compare_image_ground_truth(compared_image, ground_truth):
             #Yellow to Green color scale for zones where it should be 1
             if truth_data == 1:
                 delta = truth_data - image_data
-                diff[x,y] = [delta, 1, 0]
+                diff[x, y] = [delta, 1, 0]
             #Red to black color scale for zones where it should be 0
             else:
                 delta = image_data
-                diff[x,y] = [delta, 0, 0]
+                diff[x, y] = [delta, 0, 0]
     return diff
 
 def main(args):
-    pred_imgs, truth_masks = single_batch_generator(args.testimg_dir, 
-                                                    args.testmsk_dir, 
-                                                    pd.DataFrame(listdir(args.testimg_dir)), 
-                                                    args.batch_size, 
-                                                    [args.input_shape[0], args.input_shape[1]], 
-                                                    args.n_labels, 
-                                                    args.crop, 
+    """Evaluate model"""
+    pred_imgs, truth_masks = single_batch_generator(args.testimg_dir,
+                                                    args.testmsk_dir,
+                                                    pd.DataFrame(listdir(args.testimg_dir)),
+                                                    args.batch_size,
+                                                    [args.input_shape[0], args.input_shape[1]],
+                                                    args.n_labels,
+                                                    args.crop,
                                                     args.flip,
-                                                    empty_mask= not args.ground_truth)
+                                                    empty_mask=not args.ground_truth)
                                                     #do not create masks when they are not needed, useful for tests
                                                     #without mask data
     np_pred_imgs = np.array(pred_imgs)
-    
+
     # Generate a combined images of all test images input
-    imgs_comb = np.hstack( (np.asarray(i) for i in pred_imgs ) )
+    imgs_comb = np.hstack((np.asarray(i) for i in pred_imgs))
     #plt.imsave('combined_input.png', cv2.cvtColor(imgs_comb, cv2.COLOR_BGR2RGB))
-    
+
     # Build a network and load weights
-    segnet = CreateSegNet(args.input_shape, 
-                          args.n_labels, 
-                          args.kernel, 
-                          args.pool_size, 
-                          args.output_mode)
+    segnet = create_segnet(args.input_shape,
+                           args.n_labels,
+                           args.kernel,
+                           args.pool_size,
+                           args.output_mode)
     print("Segnet built")
     segnet.load_weights(args.weights)
     print("Weights loaded")
@@ -66,17 +68,17 @@ def main(args):
     for image in result:
         result_img = []
         for i in range(0, args.n_labels):
-            reshaped = np.reshape(image[:,i], (args.input_shape[0], args.input_shape[1]))
+            reshaped = np.reshape(image[:, i], (args.input_shape[0], args.input_shape[1]))
             result_img.append(reshaped)
         result_imgs.append(result_img)
     
     # Generate a combined images of all test images output
     v_stacked = []
     for image in result_imgs:
-        this_image = np.vstack( np.asarray(i) for i in image)
+        this_image = np.vstack(np.asarray(i) for i in image)
         v_stacked.append(this_image)
-    
-    results_comb = np.hstack( (np.asarray(i) for i in v_stacked ) )
+
+    results_comb = np.hstack((np.asarray(i) for i in v_stacked))
     #plt.imsave('combined_output.png', results_comb)
     
     #Compare to ground truth if selected, otherwise we will output raw results
@@ -86,29 +88,29 @@ def main(args):
         for mask in truth_masks:
             result_mask = []
             for i in range(0, args.n_labels):
-                reshaped = np.reshape(mask[:,i], (args.input_shape[0], args.input_shape[1]))
+                reshaped = np.reshape(mask[:, i], (args.input_shape[0], args.input_shape[1]))
                 result_mask.append(reshaped)
             truth_maps_reshaped.append(result_mask)
             
         # Generate a combined images of all ground truth masks
         v_stacked = []
         for mask in truth_maps_reshaped:
-            this_mask = np.vstack( np.asarray(i) for i in mask)
+            this_mask = np.vstack(np.asarray(i) for i in mask)
             v_stacked.append(this_mask)
         
-        masks_comb = np.hstack( (np.asarray(i) for i in v_stacked ) )
+        masks_comb = np.hstack((np.asarray(i) for i in v_stacked))
         #plt.imsave('combined_output.png', masks_comb)
         
         #Compared ground truth to predictions
         results_comb = compare_image_ground_truth(results_comb, masks_comb)
     
     else:    
-        results_comb = cv2.cvtColor(results_comb, cv2.COLOR_GRAY2RGB)        
+        results_comb = cv2.cvtColor(results_comb, cv2.COLOR_GRAY2RGB)
         
     # Stack combined images
     imgs_comb = imgs_comb / 255.0
     imgs_to_stack = [imgs_comb, results_comb]
-    imgs_total = np.vstack( (np.asarray(i) for i in imgs_to_stack ) )
+    imgs_total = np.vstack((np.asarray(i) for i in imgs_to_stack))
     
     # Save compilation result
     plt.imsave(args.results_dir + 'combined.png', imgs_total)
@@ -119,50 +121,50 @@ if __name__ == "__main__":
     # command line argments
     parser = argparse.ArgumentParser(description="SegNet dataset")
     parser.add_argument("--weights",
-            default=config['eval']['weights_file'],
-            help="starting weights path")
+                        default=CONFIG['eval']['weights_file'],
+                        help="starting weights path")
     parser.add_argument("--model",
-        default=config['eval']['model_file'],
-        help="starting weights path")
+                        default=CONFIG['eval']['model_file'],
+                        help="starting weights path")
     parser.add_argument("--testimg_dir",
-            default=config['dataset']['test']['images_dir'],
-            help="test image dir path")
+                        default=CONFIG['dataset']['test']['images_dir'],
+                        help="test image dir path")
     parser.add_argument("--testmsk_dir",
-            default=config['dataset']['test']['masks_dir'],
-            help="test mask dir path")
+                        default=CONFIG['dataset']['test']['masks_dir'],
+                        help="test mask dir path")
     parser.add_argument("--results_dir",
-            default=config['eval']['results_dir'],
-            help="test mask dir path")
+                        default=CONFIG['eval']['results_dir'],
+                        help="test mask dir path")
     parser.add_argument("--ground_truth",
-            default=config['eval']['ground_truth'],
-            help="Compare to ground truth or raw results")
+                        default=CONFIG['eval']['ground_truth'],
+                        help="Compare to ground truth or raw results")
     parser.add_argument("--batch_size",
-            default=config['eval']['batch_size'],
-            type=int,
-            help="Eval batch size")
+                        default=CONFIG['eval']['batch_size'],
+                        type=int,
+                        help="Eval batch size")
     parser.add_argument("--n_labels",
-            default=config['dataset']['n_labels'],
-            type=int,
-            help="Number of label")
+                        default=CONFIG['dataset']['n_labels'],
+                        type=int,
+                        help="Number of label")
     parser.add_argument("--crop",
-            default=config['eval']['crop'],
-            help="Crop to input shape, otherwise resize")
+                        default=CONFIG['eval']['crop'],
+                        help="Crop to input shape, otherwise resize")
     parser.add_argument("--flip",
-            default=config['eval']['flip'],
-            help="Random flip of training images")
+                        default=CONFIG['eval']['flip'],
+                        help="Random flip of training images")
     parser.add_argument("--input_shape",
-            default=config['segnet']['input_shape'],
-            help="Input images shape")
+                        default=CONFIG['segnet']['input_shape'],
+                        help="Input images shape")
     parser.add_argument("--kernel",
-            default=config['segnet']['kernel'],
-            type=int,
-            help="Kernel size")
+                        default=CONFIG['segnet']['kernel'],
+                        type=int,
+                        help="Kernel size")
     parser.add_argument("--pool_size",
-            default=config['segnet']['pool_size'],
-            help="pooling and unpooling size")
+                        default=CONFIG['segnet']['pool_size'],
+                        help="pooling and unpooling size")
     parser.add_argument("--output_mode",
-            default=config['segnet']['output_mode'],
-            type=str,
-            help="output activation")
+                        default=CONFIG['segnet']['output_mode'],
+                        type=str,
+                        help="output activation")
     args = parser.parse_args()
     main(args)
