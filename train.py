@@ -10,75 +10,66 @@ from configuration import CONFIG
 
 def main(args):
     """Training"""
-    # set the necessary list
-    train_list = pd.DataFrame(listdir(args.trainimg_dir))
-    val_list = pd.DataFrame(listdir(args.valimg_dir))
-    domain_list = pd.DataFrame(listdir(args.domainimg_dir))
-
-    # set the necessary directories
-    trainimg_dir = args.trainimg_dir
-    trainmsk_dir = args.trainmsk_dir
-    valimg_dir = args.valimg_dir
-    valmsk_dir = args.valmsk_dir
-    domainimg_dir = args.domainimg_dir
 
     # Training generator
-    segnet_train_gen = segnet_generator(trainimg_dir,
-                                        trainmsk_dir,
-                                        train_list,
-                                        args.batch_size,
-                                        [args.input_shape[0], args.input_shape[1]],
-                                        args.n_labels,
-                                        args.crop,
-                                        args.flip,
-                                        args.motion_blur,
-                                        args.sp_noise)
+    segnet_train_gen = segnet_generator(img_dir=args.trainimg_dir,
+                                        mask_dir=args.trainmsk_dir,
+                                        lists=pd.DataFrame(listdir(args.trainimg_dir)),
+                                        batch_size=args.batch_size,
+                                        dims=[args.input_shape[0], args.input_shape[1]],
+                                        n_labels=args.n_labels,
+                                        crop=args.crop,
+                                        flip=args.flip,
+                                        motion_blur=args.motion_blur,
+                                        sp_noise=args.sp_noise)
     
     # Validation generator
-    segnet_val_gen = segnet_generator(valimg_dir,
-                                      valmsk_dir,
-                                      val_list,
-                                      args.batch_size,
-                                      [args.input_shape[0], args.input_shape[1]],
-                                      args.n_labels,
-                                      args.crop,
-                                      args.flip,
-                                      args.motion_blur,
-                                      args.sp_noise) 
+    segnet_val_gen = segnet_generator(img_dir=args.valimg_dir,
+                                        mask_dir=args.valmsk_dir,
+                                        lists=pd.DataFrame(listdir(args.valimg_dir)),
+                                        batch_size=args.batch_size,
+                                        dims=[args.input_shape[0], args.input_shape[1]],
+                                        n_labels=args.n_labels,
+                                        crop=args.crop,
+                                        flip=args.flip,
+                                        motion_blur=args.motion_blur,
+                                        sp_noise=args.sp_noise)
 
     # Domain adaptation generator
-    domain_train_gen = domain_generator(trainimg_dir,
-                                        domainimg_dir,
-                                        train_list,
-                                        domain_list,
-                                        args.batch_size,
-                                        [args.input_shape[0], args.input_shape[1]],
-                                        args.crop,
-                                        args.flip,
-                                        args.motion_blur,
-                                        args.sp_noise) 
+    domain_train_gen = domain_generator(img_dir=args.trainimg_dir,
+                                        domain_dir=args.domainimg_dir,
+                                        img_list=pd.DataFrame(listdir(args.trainimg_dir)),
+                                        domain_list=pd.DataFrame(listdir(args.domainimg_dir)),
+                                        batch_size=args.batch_size,
+                                        dims=[args.input_shape[0], args.input_shape[1]],
+                                        crop=args.crop,
+                                        flip=args.flip,
+                                        motion_blur=args.motion_blur,
+                                        sp_noise=args.sp_noise) 
     
+    # Create the complete network
     segnet, domain_adapt = create_segnet(args.input_shape,
                                          args.n_labels,
                                          args.kernel,
                                          args.pool_size,
                                          args.output_mode)
-    print("SegNet created")
-    #print(segnet.summary())
+    print("SegNet/DANN created")
     
     # Load weights if specified in args
     if args.segnet_weights and args.domain_weights:
         segnet.load_weights(args.segnet_weights)
         domain_adapt.load_weights(args.domain_weights)
 
+    # Compile both models
     segnet.compile(loss=args.loss,
                    optimizer=args.optimizer,
                    metrics=["accuracy"])
-    
     domain_adapt.compile(loss=args.loss,
                          optimizer=args.optimizer,
                          metrics=["accuracy"])
     
+    # Custom training loop
+    # Each complete epoch is one epoch on segnet, one epoch on dann
     for i in range(0, args.n_epochs):
         print("")
         print("--- MAIN EPOCH " + str(i + 1) + " / " + str(args.n_epochs) + " ---")
@@ -97,6 +88,7 @@ def main(args):
                                    workers=2,
                                    max_queue_size=2 * args.batch_size)
             
+    # Save weights of both models on completion
     segnet.save_weights("./weights/SegNet-"+str(args.n_epochs)+".hdf5")
     domain_adapt.save_weights("./weights/Domain_adapt-"+str(args.n_epochs)+".hdf5")
     print("Weights saved")
