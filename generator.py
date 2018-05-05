@@ -6,7 +6,16 @@ from keras.utils import to_categorical
 import numpy as np
 import cv2
 
-def domain_generator(img_dir, domain_dir, img_list, domain_list, batch_size, dims, crop, flip, motion_blur, sp_noise):
+def domain_generator(img_dir,
+                     domain_dir,
+                     img_list,
+                     domain_list,
+                     batch_size,
+                     dims,
+                     crop,
+                     flip,
+                     motion_blur,
+                     sp_noise):
     """Continous generator"""
     while True:
         imgs = []
@@ -42,7 +51,16 @@ def domain_generator(img_dir, domain_dir, img_list, domain_list, batch_size, dim
             
         yield np.array(imgs), to_categorical(labels, 2)
         
-def segnet_generator(img_dir, mask_dir, lists, batch_size, dims, n_labels, crop, flip, motion_blur, sp_noise):
+def segnet_generator(img_dir,
+                     mask_dir,
+                     lists,
+                     batch_size,
+                     dims,
+                     n_labels,
+                     crop,
+                     flip,
+                     motion_blur,
+                     sp_noise):
     """Continous generator"""
     while True:
         yield single_batch_generator(img_dir,
@@ -56,7 +74,17 @@ def segnet_generator(img_dir, mask_dir, lists, batch_size, dims, n_labels, crop,
                                      motion_blur,
                                      sp_noise)
 
-def single_batch_generator(img_dir, mask_dir, lists, batch_size, dims, n_labels, crop, flip, motion_blur=0, sp_noise=0, empty_mask=False):
+def single_batch_generator(img_dir,
+                           mask_dir,
+                           lists,
+                           batch_size,
+                           dims,
+                           n_labels,
+                           crop, 
+                           flip,
+                           motion_blur=0,
+                           sp_noise=0,
+                           empty_mask=False):
     """Generate one batch of data"""
     ix = np.random.choice(np.arange(len(lists)), batch_size)
     imgs = []
@@ -81,7 +109,11 @@ def single_batch_generator(img_dir, mask_dir, lists, batch_size, dims, n_labels,
             transformed_img = sp_noise_image(transformed_img)
             
         # Convert mask to labels
-        array_mask = to_categorical_labels(transformed_mask[:, :, 0], dims, n_labels, empty_mask)
+        if empty_mask:
+            array_mask = np.zeros([dims[0], dims[1], n_labels])    
+        else:
+            array_mask = to_categorical(transformed_mask[:, :, 0], n_labels)
+            array_mask = array_mask.reshape(dims[0] * dims[1], n_labels)
         
         # Append image and mask to main lists
         imgs.append(transformed_img)
@@ -90,16 +122,6 @@ def single_batch_generator(img_dir, mask_dir, lists, batch_size, dims, n_labels,
     imgs = np.array(imgs)
     labels = np.array(labels)
     return imgs, labels
-
-def to_categorical_labels(labels, dims, n_labels, empty_mask):
-    """Works like to_categorical, but allow to returns empty masks"""
-    x = np.zeros([dims[0], dims[1], n_labels])
-    if not empty_mask:
-        for i in range(dims[0]):
-            for j in range(dims[1]):
-                x[i, j, labels[i][j]] = 1
-        x = x.reshape(dims[0] * dims[1], n_labels)
-    return x
 
 def transform_data(original_img, original_mask, dims, crop, flip):
     """Geometric transformations of images and mask"""

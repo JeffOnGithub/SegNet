@@ -24,41 +24,45 @@ def main(args):
 
     # Training generator
     segnet_train_gen = segnet_generator(trainimg_dir,
-                               trainmsk_dir,
-                               train_list,
-                               args.batch_size,
-                               [args.input_shape[0], args.input_shape[1]],
-                               args.n_labels,
-                               args.crop,
-                               args.flip,
-                               args.motion_blur,
-                               args.sp_noise)
+                                        trainmsk_dir,
+                                        train_list,
+                                        args.batch_size,
+                                        [args.input_shape[0], args.input_shape[1]],
+                                        args.n_labels,
+                                        args.crop,
+                                        args.flip,
+                                        args.motion_blur,
+                                        args.sp_noise)
     
     # Validation generator
     segnet_val_gen = segnet_generator(valimg_dir,
-                             valmsk_dir,
-                             val_list,
-                             args.batch_size,
-                             [args.input_shape[0], args.input_shape[1]],
-                             args.n_labels,
-                             args.crop,
-                             args.flip,
-                             args.motion_blur,
-                             args.sp_noise) 
+                                      valmsk_dir,
+                                      val_list,
+                                      args.batch_size,
+                                      [args.input_shape[0], args.input_shape[1]],
+                                      args.n_labels,
+                                      args.crop,
+                                      args.flip,
+                                      args.motion_blur,
+                                      args.sp_noise) 
 
     # Domain adaptation generator
     domain_train_gen = domain_generator(trainimg_dir,
-                                     domainimg_dir,
-                                     train_list,
-                                     domain_list,
-                                     args.batch_size,
-                                     [args.input_shape[0], args.input_shape[1]],
-                                     args.crop,
-                                     args.flip,
-                                     args.motion_blur,
-                                     args.sp_noise) 
+                                        domainimg_dir,
+                                        train_list,
+                                        domain_list,
+                                        args.batch_size,
+                                        [args.input_shape[0], args.input_shape[1]],
+                                        args.crop,
+                                        args.flip,
+                                        args.motion_blur,
+                                        args.sp_noise) 
     
-    segnet, domain_adapt = create_segnet(args.input_shape, args.n_labels, args.kernel, args.pool_size, args.output_mode)
+    segnet, domain_adapt = create_segnet(args.input_shape,
+                                         args.n_labels,
+                                         args.kernel,
+                                         args.pool_size,
+                                         args.output_mode)
     print("SegNet created")
     #print(segnet.summary())
     
@@ -72,12 +76,12 @@ def main(args):
                    metrics=["accuracy"])
     
     domain_adapt.compile(loss=args.loss,
-                   optimizer=args.optimizer,
-                   metrics=["accuracy"])
+                         optimizer=args.optimizer,
+                         metrics=["accuracy"])
     
     for i in range(0, args.n_epochs):
         print("")
-        print("--- MAIN EPOCH " + str(i) + " / " + str(args.n_epochs) + " ---")
+        print("--- MAIN EPOCH " + str(i + 1) + " / " + str(args.n_epochs) + " ---")
         print("--- SEGNET")
         segnet.fit_generator(segnet_train_gen,
                              steps_per_epoch=args.epoch_steps,
@@ -88,7 +92,7 @@ def main(args):
         domain_adapt.fit_generator(domain_train_gen,
                                    steps_per_epoch=args.epoch_steps,
                                    epochs=1)
-
+            
     segnet.save_weights("./weights/SegNet-"+str(args.n_epochs)+".hdf5")
     domain_adapt.save_weights("./weights/Domain_adapt-"+str(args.n_epochs)+".hdf5")
     print("Weights saved")

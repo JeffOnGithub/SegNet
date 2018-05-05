@@ -11,9 +11,15 @@ from keras.layers.normalization import BatchNormalization
 from keras_MaxPoolingLayers import MaxPoolingWithArgmax2D, MaxUnpooling2D
 from keras_GradientReversalLayer import GradientReversal
 
-def full_conv2D_layer(input_tensor, n_features, kernel, padding, activation):
+def full_conv2D_layer(input_tensor,
+                      n_features,
+                      kernel,
+                      padding,
+                      activation):
     """Full stack of conv2D layers"""
-    output = Convolution2D(n_features, (kernel, kernel), padding=padding)(input_tensor)
+    output = Convolution2D(n_features,
+                           (kernel, kernel),
+                           padding=padding)(input_tensor)
     output = BatchNormalization()(output)
     output = Activation(activation)(output)
     return output
@@ -24,7 +30,12 @@ def full_conv2D_block(x, n_layers, n_features, kernel=3, padding="same", activat
         x = full_conv2D_layer(x, n_features, kernel, padding, activation)
     return x
 
-def create_segnet(input_shape, n_labels, kernel, pool_size=(2, 2), output_mode="softmax"):
+def create_segnet(input_shape,
+                  n_labels,
+                  kernel,
+                  pool_size=(2, 2),
+                  output_mode="softmax",
+                  reverse_ratio=1):
     """Create a segnet model and returns it"""
     
     # Encoder
@@ -79,10 +90,12 @@ def create_segnet(input_shape, n_labels, kernel, pool_size=(2, 2), output_mode="
     main_output = Activation(output_mode, name='main_output')(conv_26)
 
     # Domain branch
-    
+    # Flatten incoming convolutions for dense layers
     domain_0 = Flatten()(pool_block_5)
-    domain_0 = GradientReversal(-1)(domain_0)
-    domain_1 = Dense(64, activation='relu')(domain_0)
+    # Flip gradient on backpropagation (DANN)
+    domain_0 = GradientReversal(reverse_ratio)(domain_0)
+    # Standard dense layers
+    domain_1 = Dense(128, activation='relu')(domain_0)
     domain_2 = Dense(64, activation='relu')(domain_1)
     domain_3 = Dense(64, activation='relu')(domain_2)
     aux_output = Dense(2, activation='sigmoid', name='aux_output')(domain_3)

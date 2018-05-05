@@ -17,12 +17,13 @@ CONFIG['dataset']['val']['masks_dir'] = "./dataset/val/maps/"
 
 #Dataset test
 CONFIG['dataset']['test'] = dict()
-CONFIG['dataset']['test']['images_dir'] = "./dataset/test/images/"
-CONFIG['dataset']['test']['masks_dir'] = "./dataset/test/maps/"
+#CONFIG['dataset']['test']['images_dir'] = "./dataset/test/images/"
+#CONFIG['dataset']['test']['masks_dir'] = "./dataset/test/maps/"
+CONFIG['dataset']['test']['images_dir'] = "./dataset/other_domain/"
+CONFIG['dataset']['test']['masks_dir'] = "./dataset/other_domain/"
 
 #Dataset other domain
 CONFIG['dataset']['other_domain'] = dict()
-#CONFIG['dataset']['other_domain']['images_dir'] = "./dataset/train/images/"
 CONFIG['dataset']['other_domain']['images_dir'] = "./dataset/other_domain/"
 
 #Dataset properties
@@ -33,20 +34,20 @@ CONFIG['dataset']['n_labels'] = 2
 #Training
 CONFIG['training'] = dict()
 CONFIG['training']['batch_size'] = 8
-CONFIG['training']['n_epochs'] = 10
-CONFIG['training']['train_steps'] = 50
-CONFIG['training']['val_steps'] = 10
+CONFIG['training']['n_epochs'] = 2
+CONFIG['training']['train_steps'] = 100
+CONFIG['training']['val_steps'] = 1
 CONFIG['training']['crop'] = True
 CONFIG['training']['flip'] = True
 CONFIG['training']['motion_blur'] = 0.25
-CONFIG['training']['sp_noise'] = 0.25
+CONFIG['training']['sp_noise'] = 0.0
 
 #Eval
 CONFIG['eval'] = dict()
 CONFIG['eval']['batch_size'] = 20
 CONFIG['eval']['crop'] = True
 CONFIG['eval']['flip'] = True
-CONFIG['eval']['ground_truth'] = True
+CONFIG['eval']['ground_truth'] = False
 CONFIG['eval']['results_dir'] = "./results/"
 CONFIG['eval']['weights_file'] = "./weights/SegNet.hdf5"
 CONFIG['eval']['model_file'] = None
