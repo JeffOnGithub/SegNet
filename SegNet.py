@@ -4,7 +4,7 @@
 from keras.models import Model
 from keras.layers import Input
 from keras.utils import plot_model
-from keras.layers.core import Activation, Reshape
+from keras.layers.core import Activation, Reshape, Dense, Flatten
 from keras.layers.convolutional import Convolution2D
 from keras.layers.normalization import BatchNormalization
 
@@ -27,7 +27,7 @@ def full_conv2D_block(x, n_layers, n_features, kernel=3, padding="same", activat
 def create_segnet(input_shape, n_labels, kernel, pool_size=(2, 2), output_mode="softmax"):
     """Create a segnet model and returns it"""
     
-    # encoder
+    # Encoder
     inputs = Input(shape=input_shape)
 
     pool_block_1 = full_conv2D_block(x=inputs, n_layers=2, n_features=64, kernel=kernel)
@@ -50,7 +50,7 @@ def create_segnet(input_shape, n_labels, kernel, pool_size=(2, 2), output_mode="
 
     pool_5, mask_5 = MaxPoolingWithArgmax2D(pool_size)(pool_block_5)
 
-    # decoder
+    # Decoder
 
     unpool_1 = MaxUnpooling2D(pool_size)([pool_5, mask_5])
 
@@ -76,14 +76,25 @@ def create_segnet(input_shape, n_labels, kernel, pool_size=(2, 2), output_mode="
     conv_26 = BatchNormalization()(conv_26)
     conv_26 = Reshape((input_shape[0] * input_shape[1], n_labels), input_shape=(input_shape[0], input_shape[1], n_labels))(conv_26)
 
-    outputs = Activation(output_mode)(conv_26)
+    main_output = Activation(output_mode, name='main_output')(conv_26)
 
-    segnet = Model(inputs=inputs, outputs=outputs, name="SegNet")
+    # Domain branch
+    
+    domain_0 = Flatten()(pool_block_5)
+    domain_0 = GradientReversal(-1)(domain_0)
+    domain_1 = Dense(64, activation='relu')(domain_0)
+    domain_2 = Dense(64, activation='relu')(domain_1)
+    domain_3 = Dense(64, activation='relu')(domain_2)
+    aux_output = Dense(2, activation='sigmoid', name='aux_output')(domain_3)
+    
+    segnet = Model(inputs=inputs, outputs=main_output, name="SegNet")
+    domain_adapt = Model(inputs=inputs, outputs=aux_output, name="Domain_adaptation")
 
-    return segnet
+    return segnet, domain_adapt
 
 #Unit testing
 #print('Segnet creation started')
-#model = create_segnet((128, 128, 3), 2, kernel=3, pool_size=(2, 2), output_mode="softmax")
+#model1, model2 = create_segnet((128, 128, 3), 2, kernel=3, pool_size=(2, 2), output_mode="softmax")
 #print('Segnet created')
-#plot_model(model, to_file='./model/structure.png', show_shapes=True, show_layer_names=True)
+#plot_model(model1, to_file='./model/structure1.png', show_shapes=True, show_layer_names=True)
+#plot_model(model2, to_file='./model/structure2.png', show_shapes=True, show_layer_names=True)

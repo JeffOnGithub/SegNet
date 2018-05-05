@@ -50,7 +50,7 @@ def main(args):
     #plt.imsave('combined_input.png', cv2.cvtColor(imgs_comb, cv2.COLOR_BGR2RGB))
 
     # Build a network and load weights
-    segnet = create_segnet(args.input_shape,
+    segnet, domain = create_segnet(args.input_shape,
                            args.n_labels,
                            args.kernel,
                            args.pool_size,

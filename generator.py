@@ -2,10 +2,47 @@
 """Generator module for Segnet"""
 
 from random import randint, uniform, random
+from keras.utils import to_categorical
 import numpy as np
 import cv2
 
-def data_generator(img_dir, mask_dir, lists, batch_size, dims, n_labels, crop, flip, motion_blur, sp_noise):
+def domain_generator(img_dir, domain_dir, img_list, domain_list, batch_size, dims, crop, flip, motion_blur, sp_noise):
+    """Continous generator"""
+    while True:
+        imgs = []
+        labels = []
+        
+        for i in range(0, batch_size):
+            img_path = ''
+            if randint(0, 1):
+                # training image
+                img_path = img_dir + img_list.iloc[1, 0]
+                labels.append(0)
+            else:
+                # domain adaptation image
+                img_path = domain_dir + domain_list.iloc[1, 0]
+                labels.append(1)
+            
+            original_img = cv2.imread(img_path)
+            # switch colors to RGB
+            original_img = cv2.cvtColor(original_img, cv2.COLOR_BGR2RGB)
+            
+            # Geometric transformations to fit the network
+            transformed_img, transformed_mask = transform_data(original_img, original_img, dims, crop, flip)
+            
+            # Data augmentations
+            if uniform(0, 1) < motion_blur:
+                transformed_img = motion_blur_image(transformed_img)
+            
+            if uniform(0, 1) < sp_noise:
+                transformed_img = sp_noise_image(transformed_img)
+            
+            # Append image to main list
+            imgs.append(transformed_img)
+            
+        yield np.array(imgs), to_categorical(labels, 2)
+        
+def segnet_generator(img_dir, mask_dir, lists, batch_size, dims, n_labels, crop, flip, motion_blur, sp_noise):
     """Continous generator"""
     while True:
         yield single_batch_generator(img_dir,
@@ -78,7 +115,7 @@ def transform_data(original_img, original_mask, dims, crop, flip):
    
     #Flip randomly images and masks
     if flip:
-        orientation = randint(0, 4)
+        orientation = randint(0, 3)
         if orientation == 0: #horizontal
             transformed_img = cv2.flip(transformed_img, 0)
             transformed_mask = cv2.flip(transformed_mask, 0)

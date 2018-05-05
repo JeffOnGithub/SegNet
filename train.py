@@ -5,7 +5,7 @@ import argparse
 from os import listdir
 import pandas as pd
 from segnet import create_segnet
-from generator import data_generator
+from generator import segnet_generator, domain_generator
 from configuration import CONFIG
 
 def main(args):
@@ -13,15 +13,17 @@ def main(args):
     # set the necessary list
     train_list = pd.DataFrame(listdir(args.trainimg_dir))
     val_list = pd.DataFrame(listdir(args.valimg_dir))
+    domain_list = pd.DataFrame(listdir(args.domainimg_dir))
 
     # set the necessary directories
     trainimg_dir = args.trainimg_dir
     trainmsk_dir = args.trainmsk_dir
     valimg_dir = args.valimg_dir
     valmsk_dir = args.valmsk_dir
+    domainimg_dir = args.domainimg_dir
 
     # Training generator
-    train_gen = data_generator(trainimg_dir,
+    segnet_train_gen = segnet_generator(trainimg_dir,
                                trainmsk_dir,
                                train_list,
                                args.batch_size,
@@ -33,7 +35,7 @@ def main(args):
                                args.sp_noise)
     
     # Validation generator
-    val_gen = data_generator(valimg_dir,
+    segnet_val_gen = segnet_generator(valimg_dir,
                              valmsk_dir,
                              val_list,
                              args.batch_size,
@@ -44,37 +46,62 @@ def main(args):
                              args.motion_blur,
                              args.sp_noise) 
 
-    segnet = create_segnet(args.input_shape, args.n_labels, args.kernel, args.pool_size, args.output_mode)
+    # Domain adaptation generator
+    domain_train_gen = domain_generator(trainimg_dir,
+                                     domainimg_dir,
+                                     train_list,
+                                     domain_list,
+                                     args.batch_size,
+                                     [args.input_shape[0], args.input_shape[1]],
+                                     args.crop,
+                                     args.flip,
+                                     args.motion_blur,
+                                     args.sp_noise) 
+    
+    segnet, domain_adapt = create_segnet(args.input_shape, args.n_labels, args.kernel, args.pool_size, args.output_mode)
     print("SegNet created")
     #print(segnet.summary())
     
     # Load weights if specified in args
-    if args.weights:
-        segnet.load_weights(args.weights)
+    if args.segnet_weights and args.domain_weights:
+        segnet.load_weights(args.segnet_weights)
+        domain_adapt.load_weights(args.domain_weights)
 
     segnet.compile(loss=args.loss,
                    optimizer=args.optimizer,
                    metrics=["accuracy"])
-    segnet.fit_generator(train_gen,
-                         steps_per_epoch=args.epoch_steps,
-                         epochs=args.n_epochs,
-                         validation_data=val_gen,
-                         validation_steps=args.val_steps)
+    
+    domain_adapt.compile(loss=args.loss,
+                   optimizer=args.optimizer,
+                   metrics=["accuracy"])
+    
+    for i in range(0, args.n_epochs):
+        print("")
+        print("--- MAIN EPOCH " + str(i) + " / " + str(args.n_epochs) + " ---")
+        print("--- SEGNET")
+        segnet.fit_generator(segnet_train_gen,
+                             steps_per_epoch=args.epoch_steps,
+                             epochs=1,
+                             validation_data=segnet_val_gen,
+                             validation_steps=args.val_steps)
+        print("---  ADAPTATION")
+        domain_adapt.fit_generator(domain_train_gen,
+                                   steps_per_epoch=args.epoch_steps,
+                                   epochs=1)
 
     segnet.save_weights("./weights/SegNet-"+str(args.n_epochs)+".hdf5")
+    domain_adapt.save_weights("./weights/Domain_adapt-"+str(args.n_epochs)+".hdf5")
     print("Weights saved")
-
-    #json_string = segnet.to_json()
-    #open("./model/SegNet.json", "w").write(json_string)
-    #print("Model saved")
-
 
 if __name__ == "__main__":
     # command line argments
     parser = argparse.ArgumentParser(description="SegNet dataset")
-    parser.add_argument("--weights",
+    parser.add_argument("--segnet_weights",
                         default=None,
-                        help="starting weights path")
+                        help="Segnet branch starting weights path")
+    parser.add_argument("--domain_weights",
+                        default=None,
+                        help="Domain adaptation branch starting weights path")
     parser.add_argument("--trainimg_dir",
                         default=CONFIG['dataset']['train']['images_dir'],
                         help="train image dir path")
@@ -87,6 +114,9 @@ if __name__ == "__main__":
     parser.add_argument("--valmsk_dir",
                         default=CONFIG['dataset']['val']['masks_dir'],
                         help="val mask dir path")
+    parser.add_argument("--domainimg_dir",
+                        default=CONFIG['dataset']['other_domain']['images_dir'],
+                        help="domain image dir path")
     parser.add_argument("--batch_size",
                         default=CONFIG['training']['batch_size'],
                         type=int,
