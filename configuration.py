@@ -20,6 +20,10 @@ CONFIG['dataset']['test'] = dict()
 CONFIG['dataset']['test']['images_dir'] = "./dataset/test/images/"
 CONFIG['dataset']['test']['masks_dir'] = "./dataset/test/maps/"
 
+#Dataset other domain
+CONFIG['dataset']['other_domain'] = dict()
+CONFIG['dataset']['other_domain']['images_dir'] = "./dataset/other_domain/"
+
 #Dataset properties
 CONFIG['dataset']['n_labels'] = 2
 
