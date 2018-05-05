@@ -87,11 +87,15 @@ def main(args):
                              steps_per_epoch=args.epoch_steps,
                              epochs=1,
                              validation_data=segnet_val_gen,
-                             validation_steps=args.val_steps)
+                             validation_steps=args.val_steps,
+                             workers=2,
+                             max_queue_size=2 * args.batch_size)
         print("---  ADAPTATION")
         domain_adapt.fit_generator(domain_train_gen,
                                    steps_per_epoch=args.epoch_steps,
-                                   epochs=1)
+                                   epochs=1,
+                                   workers=2,
+                                   max_queue_size=2 * args.batch_size)
             
     segnet.save_weights("./weights/SegNet-"+str(args.n_epochs)+".hdf5")
     domain_adapt.save_weights("./weights/Domain_adapt-"+str(args.n_epochs)+".hdf5")
