@@ -31,8 +31,8 @@ CONFIG['dataset']['n_labels'] = 2
 
 #Training
 CONFIG['training'] = dict()
-CONFIG['training']['batch_size'] = 5
-CONFIG['training']['n_epochs'] = 10
+CONFIG['training']['batch_size'] = 8
+CONFIG['training']['n_epochs'] = 1
 CONFIG['training']['train_steps'] = 100
 CONFIG['training']['val_steps'] = 20
 CONFIG['training']['crop'] = True
@@ -42,7 +42,7 @@ CONFIG['training']['sp_noise'] = 0.25
 
 #Eval
 CONFIG['eval'] = dict()
-CONFIG['eval']['batch_size'] = 5
+CONFIG['eval']['batch_size'] = 10
 CONFIG['eval']['crop'] = True
 CONFIG['eval']['flip'] = True
 CONFIG['eval']['ground_truth'] = True
