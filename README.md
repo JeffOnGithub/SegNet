@@ -20,6 +20,11 @@ The repository of other people's segmentation, pooling with indices not implemen
 But In this repository we implemented  pooling layer and unpooling layer with indices at MyLayers.py.
 Segnet architecture is early Semantic Segmentation model,so acccuracy is low but fast.
 
+## Domain adaptation
+This network included a domain adaptation branch (DANN).
+It is used as a regulator to penalize training domain exclusive features.
+Accuracy of this branch should stay at 0.5 (impossible to use feature extraction to predict image origin dataset).
+
 ## Fork (JeffOnGithub)
 This repository is used for my master.
 I've cleaned up / updated some stuff / adapted it for what i'm working on.
