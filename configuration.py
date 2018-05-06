@@ -34,9 +34,9 @@ CONFIG['dataset']['n_labels'] = 2
 #Training
 CONFIG['training'] = dict()
 CONFIG['training']['batch_size'] = 8
-CONFIG['training']['n_epochs'] = 2
-CONFIG['training']['train_steps'] = 50
-CONFIG['training']['val_steps'] = 10
+CONFIG['training']['n_epochs'] = 10
+CONFIG['training']['train_steps'] = 100
+CONFIG['training']['val_steps'] = 20
 CONFIG['training']['crop'] = True
 CONFIG['training']['flip'] = True
 CONFIG['training']['motion_blur'] = 0.25
@@ -61,3 +61,4 @@ CONFIG['segnet']['pool_size'] = (2, 2)
 CONFIG['segnet']['output_mode'] = "softmax"
 CONFIG['segnet']['loss'] = "categorical_crossentropy"
 CONFIG['segnet']['optimizer'] = "adadelta"
+CONFIG['segnet']['reverse_ratio'] = 1

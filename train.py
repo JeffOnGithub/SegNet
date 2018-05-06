@@ -48,11 +48,12 @@ def main(args):
                                         sp_noise=args.sp_noise) 
     
     # Create the complete network
-    segnet, domain_adapt = create_segnet(args.input_shape,
-                                         args.n_labels,
-                                         args.kernel,
-                                         args.pool_size,
-                                         args.output_mode)
+    segnet, domain_adapt = create_segnet(input_shape=args.input_shape,
+                                         n_labels=args.n_labels,
+                                         kernel=args.kernel,
+                                         pool_size=args.pool_size,
+                                         output_mode=args.output_mode,
+                                         reverse_ratio=args.reverse_ratio)
     print("SegNet/DANN created")
     
     # Load weights if specified in args
@@ -171,5 +172,9 @@ if __name__ == "__main__":
                         default=CONFIG['segnet']['optimizer'],
                         type=str,
                         help="optimizer")
+    parser.add_argument("--reverse_ratio",
+                        default=CONFIG['segnet']['reverse_ratio'],
+                        type=int,
+                        help="Gradient multiplier for the dann branch")
     args = parser.parse_args()
     main(args)
