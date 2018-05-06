@@ -3,11 +3,9 @@
 
 from keras.models import Model
 from keras.layers import Input
-from keras.utils import plot_model
 from keras.layers.core import Activation, Reshape, Dense, Flatten
 from keras.layers.convolutional import Convolution2D
 from keras.layers.normalization import BatchNormalization
-
 from keras_MaxPoolingLayers import MaxPoolingWithArgmax2D, MaxUnpooling2D
 from keras_GradientReversalLayer import GradientReversal
 
@@ -105,7 +103,8 @@ def create_segnet(input_shape,
 
     return segnet, domain_adapt
 
-#Unit testing
+#Testing
+#from keras.utils import plot_model
 #print('Segnet creation started')
 #model1, model2 = create_segnet((128, 128, 3), 2, kernel=3, pool_size=(2, 2), output_mode="softmax")
 #print('Segnet created')

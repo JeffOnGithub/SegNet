@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Generator module for Segnet"""
 
-from random import randint, uniform, random
+from random import randint, uniform
 from keras.utils import to_categorical
 import numpy as np
 import cv2
