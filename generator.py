@@ -2,10 +2,65 @@
 """Generator module for Segnet"""
 
 from random import randint, uniform, random
+from keras.utils import to_categorical
 import numpy as np
 import cv2
 
-def data_generator(img_dir, mask_dir, lists, batch_size, dims, n_labels, crop, flip, motion_blur, sp_noise):
+def domain_generator(img_dir,
+                     domain_dir,
+                     img_list,
+                     domain_list,
+                     batch_size,
+                     dims,
+                     crop,
+                     flip,
+                     motion_blur,
+                     sp_noise):
+    """Continous generator"""
+    while True:
+        imgs = []
+        labels = []
+        
+        for i in range(0, batch_size):
+            img_path = ''
+            if randint(0, 1):
+                # training image
+                img_path = img_dir + img_list.iloc[1, 0]
+                labels.append(0)
+            else:
+                # domain adaptation image
+                img_path = domain_dir + domain_list.iloc[1, 0]
+                labels.append(1)
+            
+            original_img = cv2.imread(img_path)
+            # switch colors to RGB
+            original_img = cv2.cvtColor(original_img, cv2.COLOR_BGR2RGB)
+            
+            # Geometric transformations to fit the network
+            transformed_img, transformed_mask = transform_data(original_img, original_img, dims, crop, flip)
+            
+            # Data augmentations
+            if uniform(0, 1) < motion_blur:
+                transformed_img = motion_blur_image(transformed_img)
+            
+            if uniform(0, 1) < sp_noise:
+                transformed_img = sp_noise_image(transformed_img)
+            
+            # Append image to main list
+            imgs.append(transformed_img)
+            
+        yield np.array(imgs), to_categorical(labels, 2)
+        
+def segnet_generator(img_dir,
+                     mask_dir,
+                     lists,
+                     batch_size,
+                     dims,
+                     n_labels,
+                     crop,
+                     flip,
+                     motion_blur,
+                     sp_noise):
     """Continous generator"""
     while True:
         yield single_batch_generator(img_dir,
@@ -19,7 +74,17 @@ def data_generator(img_dir, mask_dir, lists, batch_size, dims, n_labels, crop, f
                                      motion_blur,
                                      sp_noise)
 
-def single_batch_generator(img_dir, mask_dir, lists, batch_size, dims, n_labels, crop, flip, motion_blur=0, sp_noise=0, empty_mask=False):
+def single_batch_generator(img_dir,
+                           mask_dir,
+                           lists,
+                           batch_size,
+                           dims,
+                           n_labels,
+                           crop, 
+                           flip,
+                           motion_blur=0,
+                           sp_noise=0,
+                           empty_mask=False):
     """Generate one batch of data"""
     ix = np.random.choice(np.arange(len(lists)), batch_size)
     imgs = []
@@ -44,7 +109,11 @@ def single_batch_generator(img_dir, mask_dir, lists, batch_size, dims, n_labels,
             transformed_img = sp_noise_image(transformed_img)
             
         # Convert mask to labels
-        array_mask = to_categorical_labels(transformed_mask[:, :, 0], dims, n_labels, empty_mask)
+        if empty_mask:
+            array_mask = np.zeros([dims[0], dims[1], n_labels])    
+        else:
+            array_mask = to_categorical(transformed_mask[:, :, 0], n_labels)
+            array_mask = array_mask.reshape(dims[0] * dims[1], n_labels)
         
         # Append image and mask to main lists
         imgs.append(transformed_img)
@@ -53,16 +122,6 @@ def single_batch_generator(img_dir, mask_dir, lists, batch_size, dims, n_labels,
     imgs = np.array(imgs)
     labels = np.array(labels)
     return imgs, labels
-
-def to_categorical_labels(labels, dims, n_labels, empty_mask):
-    """Works like to_categorical, but allow to returns empty masks"""
-    x = np.zeros([dims[0], dims[1], n_labels])
-    if not empty_mask:
-        for i in range(dims[0]):
-            for j in range(dims[1]):
-                x[i, j, labels[i][j]] = 1
-        x = x.reshape(dims[0] * dims[1], n_labels)
-    return x
 
 def transform_data(original_img, original_mask, dims, crop, flip):
     """Geometric transformations of images and mask"""
@@ -78,7 +137,7 @@ def transform_data(original_img, original_mask, dims, crop, flip):
    
     #Flip randomly images and masks
     if flip:
-        orientation = randint(0, 4)
+        orientation = randint(0, 3)
         if orientation == 0: #horizontal
             transformed_img = cv2.flip(transformed_img, 0)
             transformed_mask = cv2.flip(transformed_mask, 0)

@@ -3,130 +3,111 @@
 
 from keras.models import Model
 from keras.layers import Input
-from keras.layers.core import Activation, Reshape
+from keras.utils import plot_model
+from keras.layers.core import Activation, Reshape, Dense, Flatten
 from keras.layers.convolutional import Convolution2D
 from keras.layers.normalization import BatchNormalization
 
 from keras_MaxPoolingLayers import MaxPoolingWithArgmax2D, MaxUnpooling2D
+from keras_GradientReversalLayer import GradientReversal
 
-def create_segnet(input_shape, n_labels, kernel=3, pool_size=(2, 2), output_mode="softmax"):
+def full_conv2D_layer(input_tensor,
+                      n_features,
+                      kernel,
+                      padding,
+                      activation):
+    """Full stack of conv2D layers"""
+    output = Convolution2D(n_features,
+                           (kernel, kernel),
+                           padding=padding)(input_tensor)
+    output = BatchNormalization()(output)
+    output = Activation(activation)(output)
+    return output
+
+def full_conv2D_block(x, n_layers, n_features, kernel=3, padding="same", activation="relu"):
+    """Create a block of full stack conv2D layers"""
+    for i in range(0, n_layers):
+        x = full_conv2D_layer(x, n_features, kernel, padding, activation)
+    return x
+
+def create_segnet(input_shape,
+                  n_labels,
+                  kernel,
+                  pool_size=(2, 2),
+                  output_mode="softmax",
+                  reverse_ratio=1):
     """Create a segnet model and returns it"""
-    # encoder
+    
+    # Encoder
     inputs = Input(shape=input_shape)
 
-    conv_1 = Convolution2D(64, (kernel, kernel), padding="same")(inputs)
-    conv_1 = BatchNormalization()(conv_1)
-    conv_1 = Activation("relu")(conv_1)
-    conv_2 = Convolution2D(64, (kernel, kernel), padding="same")(conv_1)
-    conv_2 = BatchNormalization()(conv_2)
-    conv_2 = Activation("relu")(conv_2)
+    pool_block_1 = full_conv2D_block(x=inputs, n_layers=2, n_features=64, kernel=kernel)
+    
+    pool_1, mask_1 = MaxPoolingWithArgmax2D(pool_size)(pool_block_1)
+    
+    pool_block_2 = full_conv2D_block(x=pool_1, n_layers=2, n_features=128, kernel=kernel)
 
-    pool_1, mask_1 = MaxPoolingWithArgmax2D(pool_size)(conv_2)
+    pool_2, mask_2 = MaxPoolingWithArgmax2D(pool_size)(pool_block_2)
 
-    conv_3 = Convolution2D(128, (kernel, kernel), padding="same")(pool_1)
-    conv_3 = BatchNormalization()(conv_3)
-    conv_3 = Activation("relu")(conv_3)
-    conv_4 = Convolution2D(128, (kernel, kernel), padding="same")(conv_3)
-    conv_4 = BatchNormalization()(conv_4)
-    conv_4 = Activation("relu")(conv_4)
+    pool_block_3 = full_conv2D_block(x=pool_2, n_layers=2, n_features=256, kernel=kernel)
 
-    pool_2, mask_2 = MaxPoolingWithArgmax2D(pool_size)(conv_4)
+    pool_3, mask_3 = MaxPoolingWithArgmax2D(pool_size)(pool_block_3)
+    
+    pool_block_4 = full_conv2D_block(x=pool_3, n_layers=2, n_features=512, kernel=kernel)
 
-    conv_5 = Convolution2D(256, (kernel, kernel), padding="same")(pool_2)
-    conv_5 = BatchNormalization()(conv_5)
-    conv_5 = Activation("relu")(conv_5)
-    conv_6 = Convolution2D(256, (kernel, kernel), padding="same")(conv_5)
-    conv_6 = BatchNormalization()(conv_6)
-    conv_6 = Activation("relu")(conv_6)
-    conv_7 = Convolution2D(256, (kernel, kernel), padding="same")(conv_6)
-    conv_7 = BatchNormalization()(conv_7)
-    conv_7 = Activation("relu")(conv_7)
+    pool_4, mask_4 = MaxPoolingWithArgmax2D(pool_size)(pool_block_4)
 
-    pool_3, mask_3 = MaxPoolingWithArgmax2D(pool_size)(conv_7)
+    pool_block_5 = full_conv2D_block(x=pool_4, n_layers=2, n_features=512, kernel=kernel)
 
-    conv_8 = Convolution2D(512, (kernel, kernel), padding="same")(pool_3)
-    conv_8 = BatchNormalization()(conv_8)
-    conv_8 = Activation("relu")(conv_8)
-    conv_9 = Convolution2D(512, (kernel, kernel), padding="same")(conv_8)
-    conv_9 = BatchNormalization()(conv_9)
-    conv_9 = Activation("relu")(conv_9)
-    conv_10 = Convolution2D(512, (kernel, kernel), padding="same")(conv_9)
-    conv_10 = BatchNormalization()(conv_10)
-    conv_10 = Activation("relu")(conv_10)
+    pool_5, mask_5 = MaxPoolingWithArgmax2D(pool_size)(pool_block_5)
 
-    pool_4, mask_4 = MaxPoolingWithArgmax2D(pool_size)(conv_10)
-
-    conv_11 = Convolution2D(512, (kernel, kernel), padding="same")(pool_4)
-    conv_11 = BatchNormalization()(conv_11)
-    conv_11 = Activation("relu")(conv_11)
-    conv_12 = Convolution2D(512, (kernel, kernel), padding="same")(conv_11)
-    conv_12 = BatchNormalization()(conv_12)
-    conv_12 = Activation("relu")(conv_12)
-    conv_13 = Convolution2D(512, (kernel, kernel), padding="same")(conv_12)
-    conv_13 = BatchNormalization()(conv_13)
-    conv_13 = Activation("relu")(conv_13)
-
-    pool_5, mask_5 = MaxPoolingWithArgmax2D(pool_size)(conv_13)
-
-    # decoder
+    # Decoder
 
     unpool_1 = MaxUnpooling2D(pool_size)([pool_5, mask_5])
 
-    conv_14 = Convolution2D(512, (kernel, kernel), padding="same")(unpool_1)
-    conv_14 = BatchNormalization()(conv_14)
-    conv_14 = Activation("relu")(conv_14)
-    conv_15 = Convolution2D(512, (kernel, kernel), padding="same")(conv_14)
-    conv_15 = BatchNormalization()(conv_15)
-    conv_15 = Activation("relu")(conv_15)
-    conv_16 = Convolution2D(512, (kernel, kernel), padding="same")(conv_15)
-    conv_16 = BatchNormalization()(conv_16)
-    conv_16 = Activation("relu")(conv_16)
+    unpool_block_1 = full_conv2D_block(x=unpool_1, n_layers=2, n_features=512, kernel=kernel)
 
-    unpool_2 = MaxUnpooling2D(pool_size)([conv_16, mask_4])
+    unpool_2 = MaxUnpooling2D(pool_size)([unpool_block_1, mask_4])
 
-    conv_17 = Convolution2D(512, (kernel, kernel), padding="same")(unpool_2)
-    conv_17 = BatchNormalization()(conv_17)
-    conv_17 = Activation("relu")(conv_17)
-    conv_18 = Convolution2D(512, (kernel, kernel), padding="same")(conv_17)
-    conv_18 = BatchNormalization()(conv_18)
-    conv_18 = Activation("relu")(conv_18)
-    conv_19 = Convolution2D(256, (kernel, kernel), padding="same")(conv_18)
-    conv_19 = BatchNormalization()(conv_19)
-    conv_19 = Activation("relu")(conv_19)
+    unpool_block_2 = full_conv2D_block(x=unpool_2, n_layers=2, n_features=256, kernel=kernel)
 
-    unpool_3 = MaxUnpooling2D(pool_size)([conv_19, mask_3])
+    unpool_3 = MaxUnpooling2D(pool_size)([unpool_block_2, mask_3])
 
-    conv_20 = Convolution2D(256, (kernel, kernel), padding="same")(unpool_3)
-    conv_20 = BatchNormalization()(conv_20)
-    conv_20 = Activation("relu")(conv_20)
-    conv_21 = Convolution2D(256, (kernel, kernel), padding="same")(conv_20)
-    conv_21 = BatchNormalization()(conv_21)
-    conv_21 = Activation("relu")(conv_21)
-    conv_22 = Convolution2D(128, (kernel, kernel), padding="same")(conv_21)
-    conv_22 = BatchNormalization()(conv_22)
-    conv_22 = Activation("relu")(conv_22)
+    unpool_block_3 = full_conv2D_block(x=unpool_3, n_layers=2, n_features=128, kernel=kernel)
 
-    unpool_4 = MaxUnpooling2D(pool_size)([conv_22, mask_2])
+    unpool_4 = MaxUnpooling2D(pool_size)([unpool_block_3, mask_2])
 
-    conv_23 = Convolution2D(128, (kernel, kernel), padding="same")(unpool_4)
-    conv_23 = BatchNormalization()(conv_23)
-    conv_23 = Activation("relu")(conv_23)
-    conv_24 = Convolution2D(64, (kernel, kernel), padding="same")(conv_23)
-    conv_24 = BatchNormalization()(conv_24)
-    conv_24 = Activation("relu")(conv_24)
+    unpool_block_4 = full_conv2D_block(x=unpool_4, n_layers=2, n_features=64, kernel=kernel)
 
-    unpool_5 = MaxUnpooling2D(pool_size)([conv_24, mask_1])
+    unpool_5 = MaxUnpooling2D(pool_size)([unpool_block_4, mask_1])
 
-    conv_25 = Convolution2D(64, (kernel, kernel), padding="same")(unpool_5)
-    conv_25 = BatchNormalization()(conv_25)
-    conv_25 = Activation("relu")(conv_25)
+    unpool_block_5 = full_conv2D_block(x=unpool_5, n_layers=1, n_features=64, kernel=kernel)
 
-    conv_26 = Convolution2D(n_labels, (1, 1), padding="valid")(conv_25)
+    conv_26 = Convolution2D(n_labels, (1, 1), padding="valid")(unpool_block_5)
     conv_26 = BatchNormalization()(conv_26)
     conv_26 = Reshape((input_shape[0] * input_shape[1], n_labels), input_shape=(input_shape[0], input_shape[1], n_labels))(conv_26)
 
-    outputs = Activation(output_mode)(conv_26)
+    main_output = Activation(output_mode, name='main_output')(conv_26)
 
-    segnet = Model(inputs=inputs, outputs=outputs, name="SegNet")
+    # Domain branch
+    # Flatten incoming convolutions for dense layers
+    domain_0 = Flatten()(pool_block_5)
+    # Flip gradient on backpropagation (DANN)
+    domain_0 = GradientReversal(reverse_ratio)(domain_0)
+    # Standard dense layers
+    domain_1 = Dense(128, activation='relu')(domain_0)
+    domain_2 = Dense(64, activation='relu')(domain_1)
+    domain_3 = Dense(64, activation='relu')(domain_2)
+    aux_output = Dense(2, activation='sigmoid', name='aux_output')(domain_3)
+    
+    segnet = Model(inputs=inputs, outputs=main_output, name="SegNet")
+    domain_adapt = Model(inputs=inputs, outputs=aux_output, name="Domain_adaptation")
 
-    return segnet
+    return segnet, domain_adapt
+
+#Unit testing
+#print('Segnet creation started')
+#model1, model2 = create_segnet((128, 128, 3), 2, kernel=3, pool_size=(2, 2), output_mode="softmax")
+#print('Segnet created')
+#plot_model(model1, to_file='./model/structure1.png', show_shapes=True, show_layer_names=True)
+#plot_model(model2, to_file='./model/structure2.png', show_shapes=True, show_layer_names=True)

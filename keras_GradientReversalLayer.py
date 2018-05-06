@@ -25,7 +25,7 @@ def reverse_gradient(X, hp_lambda):
 
 class GradientReversal(Layer):
     '''Flip the sign of gradient during training.'''
-    def __init__(self, hp_lambda, **kwargs):
+    def __init__(self, hp_lambda=1, **kwargs):
         super(GradientReversal, self).__init__(**kwargs)
         self.supports_masking = False
         self.hp_lambda = hp_lambda
@@ -35,6 +35,9 @@ class GradientReversal(Layer):
 
     def call(self, x, mask=None):
         return reverse_gradient(x, self.hp_lambda)
+
+    def compute_output_shape(self, input_shape):
+        return input_shape
 
     def get_output_shape_for(self, input_shape):
         return input_shape
