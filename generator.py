@@ -179,20 +179,20 @@ def motion_blur_image(image):
     # applying the kernel to the input image
     return cv2.filter2D(image, -1, kernel_motion_blur)
 
-def sp_noise_image(image, prob=0.01):
-    '''
-    Add salt and pepper noise to image
-    prob: Probability of the noise
-    '''
-    output = np.zeros(image.shape, np.uint8)
-    thres = 1 - prob 
-    for i in range(image.shape[0]):
-        for j in range(image.shape[1]):
-            rdn = random()
-            if rdn < prob:
-                output[i][j] = 0
-            elif rdn > thres:
-                output[i][j] = 255
-            else:
-                output[i][j] = image[i][j]
-    return output
+def sp_noise_image(image, salt_value=40):
+
+    noise = np.random.randint(salt_value + 1, size = (image.shape[0], image.shape[1]))
+    
+    #---------- Pepper ----------#
+    index = np.where(noise == 0)
+    A = index[0]
+    B = index[1]
+    image[A,B,:] = 0
+    
+    #---------- Salt ----------#
+    index = np.where(noise == salt_value)
+    A = index[0]
+    B = index[1]
+    image[A,B,:] = 255
+    
+    return image

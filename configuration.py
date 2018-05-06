@@ -34,19 +34,16 @@ CONFIG['dataset']['n_labels'] = 2
 #Training
 CONFIG['training'] = dict()
 CONFIG['training']['batch_size'] = 8
-<<<<<<< HEAD
 CONFIG['training']['n_epochs'] = 10
 CONFIG['training']['train_steps'] = 100
 CONFIG['training']['val_steps'] = 20
-=======
 CONFIG['training']['n_epochs'] = 2
 CONFIG['training']['train_steps'] = 20
 CONFIG['training']['val_steps'] = 1
->>>>>>> parent of a669538... Batch norm on DA branch
 CONFIG['training']['crop'] = True
 CONFIG['training']['flip'] = True
 CONFIG['training']['motion_blur'] = 0.25
-CONFIG['training']['sp_noise'] = 0.0
+CONFIG['training']['sp_noise'] = 0.25
 
 #Eval
 CONFIG['eval'] = dict()
