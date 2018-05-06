@@ -23,7 +23,7 @@ Segnet architecture is early Semantic Segmentation model,so acccuracy is low but
 ## Domain adaptation
 This network included a domain adaptation branch (DANN).
 It is used as a regulator to penalize training domain exclusive features.
-Accuracy of this branch should stay at 0.5 (impossible to use feature extraction to predict image origin dataset)
+Accuracy of this branch should stay at 0.5 (impossible to use feature extraction to predict image origin dataset).
 
 ## Fork (JeffOnGithub)
 This repository is used for my master.
