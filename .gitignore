@@ -6,3 +6,4 @@ dataset/
 weights/
 model/
 results/
+.spyproject/
