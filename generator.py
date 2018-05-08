@@ -5,6 +5,7 @@ from random import randint, uniform
 from keras.utils import to_categorical
 import numpy as np
 import cv2
+from additional_features import add_features
 
 def domain_generator(img_dir,
                      domain_dir,
@@ -46,6 +47,9 @@ def domain_generator(img_dir,
             if uniform(0, 1) < sp_noise:
                 transformed_img = sp_noise_image(transformed_img)
             
+            # Add features to image
+            #transformed_img = add_features(transformed_img)
+
             # Append image to main list
             imgs.append(transformed_img)
             
@@ -115,6 +119,9 @@ def single_batch_generator(img_dir,
             array_mask = to_categorical(transformed_mask[:, :, 0], n_labels)
             array_mask = array_mask.reshape(dims[0] * dims[1], n_labels)
         
+        # Add features to image
+        #transformed_img = add_features(transformed_img)
+            
         # Append image and mask to main lists
         imgs.append(transformed_img)
         labels.append(array_mask)

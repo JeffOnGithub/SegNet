@@ -39,8 +39,6 @@ CONFIG['training']['batch_size'] = 8
 CONFIG['training']['n_epochs'] = 10
 CONFIG['training']['train_steps'] = 100
 CONFIG['training']['val_steps'] = 20
-CONFIG['training']['n_epochs'] = 2
-CONFIG['training']['train_steps'] = 20
 CONFIG['training']['val_steps'] = 1
 CONFIG['training']['crop'] = True
 CONFIG['training']['flip'] = True
@@ -61,10 +59,15 @@ CONFIG['eval']['model_file'] = None
 
 CONFIG['segnet'] = dict()
 CONFIG['segnet']['cuda_device'] = "1"
-CONFIG['segnet']['input_shape'] = (256, 256, 3 + get_n_add_features())
+CONFIG['segnet']['add_features'] = False
+CONFIG['segnet']['input_shape'] = (256, 256, 3)
 CONFIG['segnet']['kernel'] = 3
 CONFIG['segnet']['pool_size'] = (2, 2)
 CONFIG['segnet']['output_mode'] = "softmax"
 CONFIG['segnet']['loss'] = "categorical_crossentropy"
 CONFIG['segnet']['optimizer'] = "adadelta"
 CONFIG['segnet']['reverse_ratio'] = 1
+
+# Add features dimensions if additional features is selected
+if CONFIG['segnet']['add_features']:
+    CONFIG['segnet']['input_shape'][2] = CONFIG['segnet']['input_shape'][2] + get_n_add_features()

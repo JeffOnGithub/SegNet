@@ -26,7 +26,7 @@ import cv2
 import numpy as np
 
 def get_n_add_features():
-    return 11;
+    return 15
 
 def add_features(img):
     img_width = img.shape[0]
@@ -47,8 +47,8 @@ def contrast_stretch(img):
   Performs a simple contrast stretch of the given image, in order to remove
   extreme outliers.
   """
-  in_min = np.percentile(img, 0.05)
-  in_max = np.percentile(img, 99.95)
+  in_min = np.percentile(img, 0.1)
+  in_max = np.percentile(img, 99.9)
 
   out_min = 0.0
   out_max = 255.0
@@ -139,7 +139,7 @@ def exgreen(img):
   G_ = G.astype(float) / np.median(G.astype(float))
   R_ = R.astype(float) / np.median(R.astype(float))
 
-  E = B_ + G_ + R_ + 0.001
+  E = B_ + G_ + R_ + 0.01
   b = B_ / E
   g = G_ / E
   r = R_ / E
@@ -170,7 +170,7 @@ def cive(img):
   G_ = G.astype(float) / np.median(G.astype(float))
   R_ = R.astype(float) / np.median(R.astype(float))
 
-  E = B_ + G_ + R_ + 0.001
+  E = B_ + G_ + R_ + 0.01
   b = B_ / E
   g = G_ / E
   r = R_ / E
@@ -201,7 +201,7 @@ def exred(img):
   G_ = G.astype(float) / np.median(G.astype(float))
   R_ = R.astype(float) / np.median(R.astype(float))
 
-  E = B_ + G_ + R_ + 0.001
+  E = B_ + G_ + R_ + 0.01
   b = B_ / E
   g = G_ / E
   r = R_ / E
