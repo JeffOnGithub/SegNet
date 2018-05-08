@@ -1,5 +1,3 @@
-from additional_features import get_n_add_features
-
 """Configuration information for SegNet"""
 CONFIG = dict()
 
