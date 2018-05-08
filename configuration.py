@@ -61,7 +61,7 @@ CONFIG['eval']['model_file'] = None
 
 CONFIG['segnet'] = dict()
 CONFIG['segnet']['cuda_device'] = "1"
-CONFIG['segnet']['input_shape'] = (256, 256, 3 + get_n_add_features())
+CONFIG['segnet']['input_shape'] = (256, 256, 3)
 CONFIG['segnet']['kernel'] = 3
 CONFIG['segnet']['pool_size'] = (2, 2)
 CONFIG['segnet']['output_mode'] = "softmax"
