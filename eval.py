@@ -2,7 +2,7 @@
 """Evaluate the Segnet model"""
 
 import argparse
-from os import listdir
+from os import listdir, environ
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -10,6 +10,9 @@ import cv2
 from segnet import create_segnet
 from generator import single_batch_generator
 from configuration import CONFIG
+
+#Set CUDA device for tensorflow
+environ["CUDA_VISIBLE_DEVICES"] = CONFIG['segnet']['cuda_device']
 
 def compare_image_ground_truth(compared_image, ground_truth):
     """Compare a prediction to ground truth to establish a visual result of the accuracy"""

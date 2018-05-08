@@ -1,3 +1,5 @@
+from additional_features import get_n_add_features
+
 """Configuration information for SegNet"""
 CONFIG = dict()
 
@@ -58,7 +60,8 @@ CONFIG['eval']['model_file'] = None
 ################### Segnet properties
 
 CONFIG['segnet'] = dict()
-CONFIG['segnet']['input_shape'] = (256, 256, 3)
+CONFIG['segnet']['cuda_device'] = "1"
+CONFIG['segnet']['input_shape'] = (256, 256, 3 + get_n_add_features())
 CONFIG['segnet']['kernel'] = 3
 CONFIG['segnet']['pool_size'] = (2, 2)
 CONFIG['segnet']['output_mode'] = "softmax"

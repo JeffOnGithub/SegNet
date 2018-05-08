@@ -2,11 +2,14 @@
 """Train the Segnet model"""
 
 import argparse
-from os import listdir
+from os import listdir, environ
 import pandas as pd
 from segnet import create_segnet
 from generator import segnet_generator, domain_generator
 from configuration import CONFIG
+
+#Set CUDA device for tensorflow
+environ["CUDA_VISIBLE_DEVICES"] = CONFIG['segnet']['cuda_device']
 
 def main(args):
     """Training"""
