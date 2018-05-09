@@ -20,16 +20,18 @@ def domain_generator(img_dir,
     while True:
         imgs = []
         labels = []
-        
+        # Choose random sequences of training images and domain images
+        ix = np.random.choice(np.arange(len(img_list)), batch_size)
+        iy = np.random.choice(np.arange(len(domain_list)), batch_size)
         for i in range(0, batch_size):
             img_path = ''
             if randint(0, 1):
                 # training image
-                img_path = img_dir + img_list.iloc[1, 0]
+                img_path = img_dir + img_list.iloc[ix[i], 0]
                 labels.append(0)
             else:
                 # domain adaptation image
-                img_path = domain_dir + domain_list.iloc[1, 0]
+                img_path = domain_dir + domain_list.iloc[iy[i], 0]
                 labels.append(1)
             
             original_img = cv2.imread(img_path)
