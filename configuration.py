@@ -33,11 +33,10 @@ CONFIG['dataset']['n_labels'] = 2
 
 #Training
 CONFIG['training'] = dict()
-CONFIG['training']['batch_size'] = 8
+CONFIG['training']['batch_size'] = 12
 CONFIG['training']['n_epochs'] = 10
 CONFIG['training']['train_steps'] = 100
 CONFIG['training']['val_steps'] = 20
-CONFIG['training']['n_epochs'] = 2
 CONFIG['training']['crop'] = True
 CONFIG['training']['flip'] = True
 CONFIG['training']['motion_blur'] = 0.25
