@@ -98,7 +98,7 @@ def single_batch_generator(img_dir,
         # switch colors to RGB
         original_img = cv2.cvtColor(original_img, cv2.COLOR_BGR2RGB)
         # masks
-        original_mask = cv2.imread(mask_dir + lists.iloc[i, 0])
+        original_mask = cv2.imread(mask_dir + lists.iloc[i, 0][:-4] + ".png")
         
         # Geometric transformations to fit the network
         transformed_img, transformed_mask = transform_data(original_img, original_mask, dims, crop, flip)
@@ -129,13 +129,13 @@ def transform_data(original_img, original_mask, dims, crop, flip):
     """Geometric transformations of images and mask"""
     # Random crop or resize, openCV starts with height, not width
     if crop:
-        random_x = randint(0, original_img.shape[1] - dims[0])
-        random_y = randint(0, original_img.shape[0] - dims[1])
-        transformed_img = original_img[random_y:random_y + dims[1], random_x:random_x + dims[0]]
-        transformed_mask = original_mask[random_y:random_y + dims[1], random_x:random_x + dims[0]]
+        random_x = randint(0, original_img.shape[0] - dims[1])
+        random_y = randint(0, original_img.shape[1] - dims[0])
+        transformed_img = original_img[random_y:random_y + dims[0], random_x:random_x + dims[1]]
+        transformed_mask = original_mask[random_y:random_y + dims[0], random_x:random_x + dims[1]]
     else:
-        transformed_img = cv2.resize(original_img, (dims[0], dims[1]))
-        transformed_mask = cv2.resize(original_mask, (dims[0], dims[1]))
+        transformed_img = cv2.resize(original_img, (dims[1], dims[0]))
+        transformed_mask = cv2.resize(original_mask, (dims[1], dims[0]))
    
     #Flip randomly images and masks
     if flip:

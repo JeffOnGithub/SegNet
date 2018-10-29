@@ -13,11 +13,16 @@ environ["CUDA_VISIBLE_DEVICES"] = CONFIG['segnet']['cuda_device']
 
 def main(args):
     """Training"""
-
+    
+    training_list = pd.DataFrame(listdir(args.trainimg_dir))
+    val_list = pd.DataFrame(listdir(args.valimg_dir))
+    #from sklearn.model_selection import train_test_split
+    #training_list, val_list = train_test_split(pd.DataFrame(listdir(args.trainimg_dir)), test_size=0.1)
+    
     # Training generator
     segnet_train_gen = segnet_generator(img_dir=args.trainimg_dir,
                                         mask_dir=args.trainmsk_dir,
-                                        lists=pd.DataFrame(listdir(args.trainimg_dir)),
+                                        lists=training_list,
                                         batch_size=args.batch_size,
                                         dims=[args.input_shape[0], args.input_shape[1]],
                                         n_labels=args.n_labels,
@@ -29,7 +34,7 @@ def main(args):
     # Validation generator
     segnet_val_gen = segnet_generator(img_dir=args.valimg_dir,
                                         mask_dir=args.valmsk_dir,
-                                        lists=pd.DataFrame(listdir(args.valimg_dir)),
+                                        lists=val_list,
                                         batch_size=args.batch_size,
                                         dims=[args.input_shape[0], args.input_shape[1]],
                                         n_labels=args.n_labels,
@@ -77,7 +82,7 @@ def main(args):
     for i in range(0, args.n_epochs):
         print("")
         print("--- MAIN EPOCH " + str(i + 1) + " / " + str(args.n_epochs) + " ---")
-        print("--- SEGNET")
+        print("--- SEGNET ---")
         segnet.fit_generator(segnet_train_gen,
                              steps_per_epoch=args.epoch_steps,
                              epochs=1,
@@ -85,9 +90,10 @@ def main(args):
                              validation_steps=args.val_steps,
                              workers=2,
                              max_queue_size=2 * args.batch_size)
-        print("---  ADAPTATION")
+                             #class_weight = args.class_weight)
+        print("---  ADAPTATION ---")
         domain_adapt.fit_generator(domain_train_gen,
-                                   steps_per_epoch=args.epoch_steps,
+                                   steps_per_epoch=args.epoch_steps / 2,
                                    epochs=1,
                                    workers=2,
                                    max_queue_size=2 * args.batch_size)
@@ -141,6 +147,9 @@ if __name__ == "__main__":
                         default=CONFIG['dataset']['n_labels'],
                         type=int,
                         help="Number of label")
+    parser.add_argument("--class_weight",
+                        default=CONFIG['dataset']['class_weight'],
+                        help="Weight of segmentation classes")
     parser.add_argument("--crop",
                         default=CONFIG['training']['crop'],
                         help="Crop to input shape, otherwise resize")

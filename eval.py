@@ -35,14 +35,14 @@ def compare_image_ground_truth(compared_image, ground_truth):
 
 def main(args):
     """Evaluate model"""
-    pred_imgs, truth_masks = single_batch_generator(args.testimg_dir,
-                                                    args.testmsk_dir,
-                                                    pd.DataFrame(listdir(args.testimg_dir)),
-                                                    args.batch_size,
-                                                    [args.input_shape[0], args.input_shape[1]],
-                                                    args.n_labels,
-                                                    args.crop,
-                                                    args.flip,
+    pred_imgs, truth_masks = single_batch_generator(img_dir=args.testimg_dir,
+                                                    mask_dir=args.testmsk_dir,
+                                                    lists=pd.DataFrame(listdir(args.testimg_dir)),
+                                                    batch_size=args.batch_size,
+                                                    dims=[args.input_shape[0], args.input_shape[1]],
+                                                    n_labels=args.n_labels,
+                                                    crop=args.crop,
+                                                    flip=args.flip,
                                                     empty_mask=not args.ground_truth)
                                                     #do not create masks when they are not needed, useful for tests
                                                     #without mask data

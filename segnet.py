@@ -89,13 +89,13 @@ def create_segnet(input_shape,
 
     # Domain branch
     # Flatten incoming convolutions for dense layers
-    domain_0 = Flatten()(pool_block_5)
+    domain_0 = Flatten()(pool_block_4)
     # Flip gradient on backpropagation (DANN)
     domain_0 = GradientReversal(reverse_ratio)(domain_0)
     # Standard dense layers
-    domain_1 = Dense(128, activation='relu')(domain_0)
-    domain_2 = Dense(64, activation='relu')(domain_1)
-    domain_3 = Dense(64, activation='relu')(domain_2)
+    domain_1 = Dense(32, activation='relu')(domain_0)
+    domain_2 = Dense(32, activation='relu')(domain_1)
+    domain_3 = Dense(32, activation='relu')(domain_2)
     aux_output = Dense(2, activation='sigmoid', name='aux_output')(domain_3)
     
     segnet = Model(inputs=inputs, outputs=main_output, name="SegNet")
