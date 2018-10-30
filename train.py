@@ -3,7 +3,6 @@
 
 import argparse
 from os import listdir, environ
-from datetime import datetime
 import pandas as pd
 from keras.callbacks import ModelCheckpoint
 from segnet import create_segnet
@@ -80,7 +79,7 @@ def main(args):
                          metrics=["accuracy"])
     
     #Set callbacks
-    checkpoint = ModelCheckpoint("./weights/" + datetime.now().strftime('%Y-%m-%d-%H-%M-%S') + "-weights-{val_loss:.2f}.hdf5", 
+    checkpoint = ModelCheckpoint(filepath="./weights/weights.{epoch:02d}-{val_loss:.2f}.hdf5", 
                                  monitor='val_acc', 
                                  verbose=1, 
                                  save_best_only=False, 
@@ -95,7 +94,8 @@ def main(args):
         print("--- SEGNET ---")
         segnet.fit_generator(segnet_train_gen,
                              steps_per_epoch=args.epoch_steps,
-                             epochs=1,
+                             epochs=i+1,
+                             initial_epoch=i,
                              validation_data=segnet_val_gen,
                              validation_steps=args.val_steps,
                              workers=2,
