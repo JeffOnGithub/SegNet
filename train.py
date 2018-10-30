@@ -3,7 +3,9 @@
 
 import argparse
 from os import listdir, environ
+from datetime import datetime
 import pandas as pd
+from keras.callbacks import ModelCheckpoint
 from segnet import create_segnet
 from generator import segnet_generator, domain_generator
 from configuration import CONFIG
@@ -77,6 +79,14 @@ def main(args):
                          optimizer=args.optimizer,
                          metrics=["accuracy"])
     
+    #Set callbacks
+    checkpoint = ModelCheckpoint("./weights/" + datetime.now().strftime('%Y-%m-%d-%H-%M-%S') + "-weights-{val_loss:.2f}.hdf5", 
+                                 monitor='val_acc', 
+                                 verbose=1, 
+                                 save_best_only=False, 
+                                 save_weights_only=True)
+    callbacks_list = [checkpoint]
+    
     # Custom training loop
     # Each complete epoch is one epoch on segnet, one epoch on dann
     for i in range(0, args.n_epochs):
@@ -89,7 +99,8 @@ def main(args):
                              validation_data=segnet_val_gen,
                              validation_steps=args.val_steps,
                              workers=2,
-                             max_queue_size=2 * args.batch_size)
+                             max_queue_size=2 * args.batch_size,
+                             callbacks=callbacks_list)
                              #class_weight = args.class_weight)
         print("---  ADAPTATION ---")
         domain_adapt.fit_generator(domain_train_gen,
