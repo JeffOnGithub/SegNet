@@ -42,6 +42,7 @@ CONFIG['training']['crop'] = False
 CONFIG['training']['flip'] = True
 CONFIG['training']['motion_blur'] = 0.25
 CONFIG['training']['sp_noise'] = 0.25
+CONFIG['training']['domain_adaptation'] = False
 
 #Eval
 CONFIG['eval'] = dict()

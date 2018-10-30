@@ -45,16 +45,17 @@ def main(args):
                                         sp_noise=args.sp_noise)
 
     # Domain adaptation generator
-    domain_train_gen = domain_generator(img_dir=args.trainimg_dir,
-                                        domain_dir=args.domainimg_dir,
-                                        img_list=pd.DataFrame(listdir(args.trainimg_dir)),
-                                        domain_list=pd.DataFrame(listdir(args.domainimg_dir)),
-                                        batch_size=args.batch_size,
-                                        dims=[args.input_shape[0], args.input_shape[1]],
-                                        crop=args.crop,
-                                        flip=args.flip,
-                                        motion_blur=args.motion_blur,
-                                        sp_noise=args.sp_noise) 
+    if args.domain_adaptation:
+        domain_train_gen = domain_generator(img_dir=args.trainimg_dir,
+                                            domain_dir=args.domainimg_dir,
+                                            img_list=pd.DataFrame(listdir(args.trainimg_dir)),
+                                            domain_list=pd.DataFrame(listdir(args.domainimg_dir)),
+                                            batch_size=args.batch_size,
+                                            dims=[args.input_shape[0], args.input_shape[1]],
+                                            crop=args.crop,
+                                            flip=args.flip,
+                                            motion_blur=args.motion_blur,
+                                            sp_noise=args.sp_noise) 
     
     # Create the complete network
     segnet, domain_adapt = create_segnet(input_shape=args.input_shape,
@@ -74,9 +75,11 @@ def main(args):
     segnet.compile(loss=args.loss,
                    optimizer=args.optimizer,
                    metrics=["accuracy"])
-    domain_adapt.compile(loss=args.loss,
-                         optimizer=args.optimizer,
-                         metrics=["accuracy"])
+    
+    if args.domain_adaptation:
+        domain_adapt.compile(loss=args.loss,
+                             optimizer=args.optimizer,
+                             metrics=["accuracy"])
     
     #Set callbacks
     checkpoint = ModelCheckpoint(filepath="./weights/weights.{epoch:02d}-{val_loss:.2f}.hdf5", 
@@ -102,12 +105,14 @@ def main(args):
                              max_queue_size=2 * args.batch_size,
                              callbacks=callbacks_list)
                              #class_weight = args.class_weight)
-        print("---  ADAPTATION ---")
-        domain_adapt.fit_generator(domain_train_gen,
-                                   steps_per_epoch=args.epoch_steps / 2,
-                                   epochs=1,
-                                   workers=2,
-                                   max_queue_size=2 * args.batch_size)
+        
+        if args.domain_adaptation:
+            print("---  ADAPTATION ---")
+            domain_adapt.fit_generator(domain_train_gen,
+                                       steps_per_epoch=args.epoch_steps / 2,
+                                       epochs=1,
+                                       workers=2,
+                                       max_queue_size=2 * args.batch_size)
             
     # Save weights of both models on completion
     segnet.save_weights("./weights/SegNet-"+str(args.n_epochs)+".hdf5")
@@ -195,6 +200,9 @@ if __name__ == "__main__":
                         default=CONFIG['segnet']['optimizer'],
                         type=str,
                         help="optimizer")
+    parser.add_argument("--domain_adaptation",
+                        default=CONFIG['training']['domain_adaptation'],
+                        help="True/False for domain adaptation to the network")
     parser.add_argument("--reverse_ratio",
                         default=CONFIG['segnet']['reverse_ratio'],
                         type=int,
