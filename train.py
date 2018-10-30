@@ -116,7 +116,8 @@ def main(args):
             
     # Save weights of both models on completion
     segnet.save_weights("./weights/SegNet-"+str(args.n_epochs)+".hdf5")
-    domain_adapt.save_weights("./weights/Domain_adapt-"+str(args.n_epochs)+".hdf5")
+    if args.domain_adaptation:
+        domain_adapt.save_weights("./weights/Domain_adapt-"+str(args.n_epochs)+".hdf5")
     print("Weights saved")
 
 if __name__ == "__main__":
