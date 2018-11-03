@@ -52,6 +52,9 @@ CONFIG['eval']['flip'] = False
 CONFIG['eval']['ground_truth'] = True
 CONFIG['eval']['results_dir'] = "./results/"
 CONFIG['eval']['weights_file'] = "./weights/SegNet.hdf5"
+CONFIG['eval']['weights_path'] = "./weights/weights.{}.hdf5"
+CONFIG['eval']['weights_array_min'] = 1
+CONFIG['eval']['weights_array_max'] = 25
 CONFIG['eval']['model_file'] = None
 
 ################### Segnet properties
