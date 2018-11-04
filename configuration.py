@@ -7,18 +7,31 @@ CONFIG['dataset'] = dict()
 
 #Dataset train
 CONFIG['dataset']['train'] = dict()
-CONFIG['dataset']['train']['images_dir'] = "Z:/transfert_test/train_syn/images/"
-CONFIG['dataset']['train']['masks_dir'] = "Z:/transfert_test/train_syn/maps_binary_roads/"
+#Train syn
+#CONFIG['dataset']['train']['images_dir'] = "Z:/transfert_test/train_syn/images/"
+#CONFIG['dataset']['train']['masks_dir'] = "Z:/transfert_test/train_syn/maps_binary_roads/"
+#Train real
+CONFIG['dataset']['train']['images_dir'] = "Z:/transfert_test/train_real/images_resized/"
+CONFIG['dataset']['train']['masks_dir'] = "Z:/transfert_test/train_real/maps_resized_binary_roads/"
+
 
 #Dataset val
 CONFIG['dataset']['val'] = dict()
-CONFIG['dataset']['val']['images_dir'] = "Z:/transfert_test/val_syn/images/"
-CONFIG['dataset']['val']['masks_dir'] = "Z:/transfert_test/val_syn/maps_binary_roads/"
+#Val syn
+#CONFIG['dataset']['val']['images_dir'] = "Z:/transfert_test/val_syn/images/"
+#CONFIG['dataset']['val']['masks_dir'] = "Z:/transfert_test/val_syn/maps_binary_roads/"
+#Val real
+CONFIG['dataset']['val']['images_dir'] = "Z:/transfert_test/val_real/images_resized/"
+CONFIG['dataset']['val']['masks_dir'] = "Z:/transfert_test/val_real/maps_resized_binary_roads/"
 
 #Dataset test
 CONFIG['dataset']['test'] = dict()
 CONFIG['dataset']['test']['images_dir'] = "Z:/transfert_test/test_real/images_resized/"
 CONFIG['dataset']['test']['masks_dir'] = "Z:/transfert_test/test_real/maps_resized_binary_roads/"
+
+#CONFIG['dataset']['test']['images_dir'] = "Z:/transfert_test/val_syn/images/"
+#CONFIG['dataset']['test']['masks_dir'] = "Z:/transfert_test/val_syn/maps_binary_roads/"
+
 #CONFIG['dataset']['test']['images_dir'] = "Z:/dataset/other_domain/"
 #CONFIG['dataset']['test']['masks_dir'] = "Z:/dataset/other_domain/"
 
@@ -28,16 +41,16 @@ CONFIG['dataset']['other_domain']['images_dir'] = "Z:/transfert_test/train_real/
 
 #Dataset properties
 CONFIG['dataset']['n_labels'] = 2
-CONFIG['dataset']['class_weight'] = {0: 1.0, 1: 1.0}
+CONFIG['dataset']['class_weight'] = {0: 1.0, 1: 3.0}
 
 ################### Training and eval
 
 #Training
 CONFIG['training'] = dict()
 CONFIG['training']['batch_size'] = 4
-CONFIG['training']['n_epochs'] = 25
-CONFIG['training']['train_steps'] = 100
-CONFIG['training']['val_steps'] = 10
+CONFIG['training']['n_epochs'] = 50
+CONFIG['training']['train_steps'] = 250
+CONFIG['training']['val_steps'] = 50
 CONFIG['training']['crop'] = False
 CONFIG['training']['flip'] = True
 CONFIG['training']['motion_blur'] = 0.25
@@ -54,7 +67,7 @@ CONFIG['eval']['results_dir'] = "./results/"
 CONFIG['eval']['weights_file'] = "./weights/SegNet.hdf5"
 CONFIG['eval']['weights_path'] = "./weights/weights.{}.hdf5"
 CONFIG['eval']['weights_array_min'] = 1
-CONFIG['eval']['weights_array_max'] = 25
+CONFIG['eval']['weights_array_max'] = 50
 CONFIG['eval']['model_file'] = None
 
 ################### Segnet properties

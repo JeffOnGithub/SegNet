@@ -34,11 +34,14 @@ def main(args):
                            args.output_mode)
     print("Segnet built")
     
-    results_loss = []
-    results_acc = []
+    #Clear result file
+    with open(CONFIG['eval']['results_dir'] + "results.csv", 'w', newline='') as myfile:
+            wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
+            wr.writerow(['run', 'loss', 'accuracy'])
     
     #Loop all available weights
     for i in range(CONFIG['eval']['weights_array_min'], CONFIG['eval']['weights_array_max'] + 1):
+        print(str(i) + " of " + str(CONFIG['eval']['weights_array_max']))
         weights_path = CONFIG['eval']['weights_path']
         segnet.load_weights(weights_path.format(format(i, '02')))
         print("Weights loaded")
@@ -50,26 +53,17 @@ def main(args):
         
         # Run images in the network and get predictions
         result = segnet.evaluate_generator(segnet_train_eval, 
-                                            steps=30, 
+                                            steps=10, 
                                             max_queue_size=10, 
                                             workers=4, 
                                             use_multiprocessing=False, 
                                             verbose=1)
-        #print(segnet.metrics_names)
-        #print(result)
-        results_loss.append(result[0])
-        results_acc.append(result[1])
         
-    print(results_loss)
-    print(results_acc)
-    
-    #Save result
-    with open(CONFIG['eval']['results_dir'] + "results.csv", 'w', newline='') as myfile:
-     wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
-     wr.writerow(results_loss)
-     wr.writerow(results_acc)
-        
-    
+        #Save result
+        with open(CONFIG['eval']['results_dir'] + "results.csv", 'a', newline='') as myfile:
+            wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
+            wr.writerow([i, result[0], result[1]])
+
 
 if __name__ == "__main__":
     # command line argments
